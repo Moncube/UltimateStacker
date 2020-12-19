@@ -730,13 +730,17 @@ public class LootablesManager {
             // Add Zombified Piglin
             lootManager.addLootable(new Lootable("ZOMBIFIED_PIGLIN",
                     new LootBuilder()
-                            .setMaterial(CompatibleMaterial.ROTTEN_FLESH)
-                            .setMin(0)
-                            .setMax(1).build(),
-                    new LootBuilder()
-                            .setMaterial(CompatibleMaterial.GOLD_NUGGET)
-                            .setMin(0)
-                            .setMax(1).build()));
+		                    .setMaterial(CompatibleMaterial.ROTTEN_FLESH)
+		                    .setMin(0)
+		                    .setMax(1).build(),
+		            new LootBuilder()
+		                    .setMaterial(CompatibleMaterial.GOLD_NUGGET)
+		                    .setMin(0)
+		                    .setMax(1).build(),
+		            new LootBuilder()
+		                    .setMaterial(CompatibleMaterial.GOLD_INGOT)
+		                    .setChance(2.5)
+		                    .addOnlyDropFors(EntityType.PLAYER).build()));
 
             // Add Piglin
             lootManager.addLootable(new Lootable("PIGLIN"));
