@@ -100,46 +100,12 @@ public class EntityStack extends ColdEntityStack {
         List<Drop> preStackedDrops = new ArrayList<>();
     
         for (int i = 1; i < getAmount(); i++) {
-            if (i == 1) {
-            	preStackedDrops.addAll(drops);
-            }
-            else
-            {
+            if (i != 1) {	
             	drops = plugin.getLootablesManager().getDrops(killed);
-            	preStackedDrops.addAll(drops);
-            }   
+            }             
+            preStackedDrops.addAll(drops);
         }
-        /*
-    	if(i==1) {
-            drops = plugin.getLootablesManager().getDrops(killed);
-            finalDrops.addAll(drops);
-            for (ItemStack is : event.getEntity().getEquipment().getArmorContents()) {
-            	System.out.println(is.toString());
-            	finalDrops.add(new Drop(is));
-            }
-    	}
-    	else
-    	{
-    		Lootable lootable = plugin.getLootablesManager().getLootManager().getRegisteredLootables().get(killed.getType().name());
-    		
-            int looting = 0;
-            if(event.getEntity().getKiller().getItemInHand().containsEnchantment(Enchantment.LOOT_BONUS_MOBS)) {
-            	
-            	looting = event.getEntity().getKiller().getItemInHand().getEnchantmentLevel(Enchantment.LOOT_BONUS_MOBS);
-            }
-
-            int rerollChance = Settings.REROLL.getBoolean() ? looting / (looting + 1) : 0; 
-            
-            lootable.getRegisteredLoot();
-            
-            drops = plugin.getLootablesManager().getDrops(killed);
-            
-            for (Drop drop : drops) 
-            {  
-            	System.out.println("stacked : "+drop.getItemStack());
-            }
-            finalDrops.addAll(drops);
-		*/
+        
         DropUtils.processStackedDrop(killed, preStackedDrops, event);
 
         if (droppedExp > 0)
