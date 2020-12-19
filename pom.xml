@@ -96,10 +96,6 @@
     </build>
     <repositories>
         <repository>
-            <id>private</id>
-            <url>http://repo.songoda.com/repository/private/</url>
-        </repository>
-        <repository>
             <id>public</id>
             <url>http://repo.songoda.com/repository/public/</url>
         </repository>
@@ -108,21 +104,21 @@
             <url>https://repo.codemc.org/repository/maven-public</url>
         </repository>
         <repository>
-            <id>spigot-repo</id>
+            <id>spigot-repo</id> 
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
     </repositories>
     <dependencies>
         <dependency>
             <groupId>org.spigotmc</groupId>
-            <artifactId>spigot</artifactId>
-            <version>1.16.2</version>
+            <artifactId>spigot-api</artifactId>
+            <version>1.16.4-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>com.songoda</groupId>
             <artifactId>SongodaCore</artifactId>
-            <version>LATEST</version>
+            <version>RELEASE</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
