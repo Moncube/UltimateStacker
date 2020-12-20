@@ -737,10 +737,12 @@ public class LootablesManager {
 		                    .setMaterial(CompatibleMaterial.GOLD_NUGGET)
 		                    .setMin(0)
 		                    .setMax(1).build(),
-		            new LootBuilder()
-		                    .setMaterial(CompatibleMaterial.GOLD_INGOT)
+                    new LootBuilder()
+                    		.setMaterial(CompatibleMaterial.GOLD_INGOT)
 		                    .setChance(2.5)
-		                    .addOnlyDropFors(EntityType.PLAYER).build()));
+		                    .addOnlyDropFors(EntityType.PLAYER)
+		                    .setAllowLootingEnchant(false)
+                            .setLootingIncrease(1).build()));
 
             // Add Piglin
             lootManager.addLootable(new Lootable("PIGLIN"));
