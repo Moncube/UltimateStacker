@@ -28,7 +28,7 @@ public class ColdEntityStack implements Stackable {
     protected UUID hostUniqueId;
 
     // These are the entities below the host.
-    protected final Deque<StackedEntity> stackedEntities = new ConcurrentLinkedDeque<>();
+    public final Deque<StackedEntity> stackedEntities = new ConcurrentLinkedDeque<>();
 
     // The amount of duplicates of the host to create when loaded.
     protected int createDuplicates = 0;
@@ -56,6 +56,10 @@ public class ColdEntityStack implements Stackable {
     public void addEntitiesToStackSilently(List<StackedEntity> stackedEntities) {
         stackedEntities.removeIf(Objects::isNull);
         this.stackedEntities.addAll(stackedEntities);
+    }
+    
+    public void addEntityToStackLast(Entity entity) {
+    	stackedEntities.add(getStackedEntity(entity));
     }
 
     public StackedEntity addEntityToStackSilently(StackedEntity stackedEntity) {

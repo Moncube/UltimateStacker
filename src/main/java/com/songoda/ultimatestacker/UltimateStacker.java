@@ -51,15 +51,19 @@ import org.bukkit.Material;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 public class UltimateStacker extends SongodaPlugin {
 
@@ -95,6 +99,7 @@ public class UltimateStacker extends SongodaPlugin {
 
         // Register WorldGuard
         WorldGuardHook.addHook("mob-stacking", true);
+        
     }
 
     @Override

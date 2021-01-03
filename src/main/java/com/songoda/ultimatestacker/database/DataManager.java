@@ -115,6 +115,10 @@ public class DataManager extends DataManagerAbstract {
                 statement.setString(1, stack.getHostUniqueId().toString());
                 statement.setInt(2, stack.getCreateDuplicates());
                 statement.executeUpdate();
+                
+                System.out.println("createHostEntity");
+            }catch(Exception e) {
+            	System.out.println(e);
             }
             int stackId = this.lastInsertedId(connection, "host_entities");
             this.sync(() -> stack.setId(stackId));
@@ -130,6 +134,10 @@ public class DataManager extends DataManagerAbstract {
                 statement.setInt(2, hostStack.getId());
                 statement.setBytes(3, stackedEntity.getSerializedEntity());
                 statement.executeUpdate();
+                
+                System.out.println("createStackedEntity");
+            }catch(Exception e) {
+            	System.out.println(e);
             }
         }), "create");
     }
@@ -146,6 +154,10 @@ public class DataManager extends DataManagerAbstract {
                     statement.addBatch();
                 }
                 statement.executeBatch();
+                
+                System.out.println("createStackedEntities");
+            }catch(Exception e) {
+            	System.out.println(e);
             }
         }), "create");
     }
@@ -159,6 +171,10 @@ public class DataManager extends DataManagerAbstract {
                 statement.setInt(2, hostStack.getCreateDuplicates());
                 statement.setInt(3, hostStack.getId());
                 statement.executeUpdate();
+                
+                System.out.println("updateHost");
+            }catch(Exception e) {
+            	System.out.println(e);
             }
         }));
     }
@@ -169,12 +185,20 @@ public class DataManager extends DataManagerAbstract {
             try (PreparedStatement statement = connection.prepareStatement(deleteHost)) {
                 statement.setInt(1, stack.getId());
                 statement.executeUpdate();
+                
+                System.out.println("deleteHost host");
+            }catch(Exception e) {
+            	System.out.println(e);
             }
 
             String deleteStackedEntities = "DELETE FROM " + this.getTablePrefix() + "stacked_entities WHERE host = ?";
             try (PreparedStatement statement = connection.prepareStatement(deleteStackedEntities)) {
                 statement.setInt(1, stack.getId());
                 statement.executeUpdate();
+                
+                System.out.println("deleteHost stacked");
+            }catch(Exception e) {
+            	System.out.println(e);
             }
         }));
     }
@@ -185,6 +209,10 @@ public class DataManager extends DataManagerAbstract {
             try (PreparedStatement statement = connection.prepareStatement(deleteStackedEntity)) {
                 statement.setString(1, uuid.toString());
                 statement.executeUpdate();
+                
+                System.out.println("deleteStackedEntity");
+            }catch(Exception e) {
+            	System.out.println(e);
             }
         }));
     }
@@ -199,6 +227,10 @@ public class DataManager extends DataManagerAbstract {
                     statement.addBatch();
                 }
                 statement.executeBatch();
+                
+                System.out.println("deleteStackedEntities");
+            }catch(Exception e) {
+            	System.out.println(e);
             }
         }));
     }

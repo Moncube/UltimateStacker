@@ -65,13 +65,14 @@ public class EntityStack extends ColdEntityStack {
             createDuplicates = 0;
         }
         if (!Settings.ENTITY_NAMETAGS.getBoolean()) return;
-
+        
         Bukkit.getScheduler().scheduleSyncDelayedTask(UltimateStacker.getInstance(), () -> {
             if (hostEntity == null) return;
 
             hostEntity.setCustomNameVisible(!Settings.HOLOGRAMS_ON_LOOK_ENTITY.getBoolean());
             hostEntity.setCustomName(Methods.compileEntityName(hostEntity, getAmount()));
         }, hostEntity == null ? 1L : 0L);
+        
 
     }
 
