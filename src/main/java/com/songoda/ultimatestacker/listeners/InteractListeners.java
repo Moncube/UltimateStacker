@@ -59,7 +59,7 @@ public class InteractListeners implements Listener {
     		
     		ItemStack item = event.getCurrentItem();
     		
-    		if(item.getType() == Material.VILLAGER_SPAWN_EGG) {
+    		//if(item.getType() == Material.VILLAGER_SPAWN_EGG) {
     			
                 net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
                 if(NMSitem.getTag().hasKey("uuid")) {
@@ -125,7 +125,7 @@ public class InteractListeners implements Listener {
 						}
 					}
 				}
-			}
+			//}
     		event.setCancelled(true);
 		}
     }
@@ -197,24 +197,20 @@ public class InteractListeners implements Listener {
                         {   
                             if(indexList<stack.getAmount())
                             {
-                				
-                            	ItemStack egg = new ItemStack(Material.VILLAGER_SPAWN_EGG,1);
-                            	ItemMeta imEgg = egg.getItemMeta();
-                            	
                             	Villager villagerEntity = liste.get(indexList);
                             	
-                            	List<String> lore = new ArrayList<String>();          	
-                            	lore.add(villagerEntity.getProfession().toString());
-                        		imEgg.setLore(lore);
-                        		egg.setItemMeta(imEgg);
+                            	ItemStack villagerLink = new ItemStack(getProfessionBlock(villagerEntity.getProfession().toString()),1);
+                            	ItemMeta imVillagerLink = villagerLink.getItemMeta();
+                            	imVillagerLink.setDisplayName("§5§o"+villagerEntity.getProfession().toString());
+                        		villagerLink.setItemMeta(imVillagerLink);
                         		
-                        		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(egg);
+                        		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(villagerLink);
                                 NBTTagCompound comp = NMSitem.getTag();
                                 comp.setString("uuid",villagerEntity.getUniqueId().toString());
                                 NMSitem.setTag(comp);
-                                egg = CraftItemStack.asBukkitCopy(NMSitem);
+                                villagerLink = CraftItemStack.asBukkitCopy(NMSitem);
 
-                                inv.setItem(i,egg);
+                                inv.setItem(i,villagerLink);
                                 indexList++;
                             }
                         }
@@ -224,6 +220,59 @@ public class InteractListeners implements Listener {
         		}
         	}
         }
+    }
+    
+    public Material getProfessionBlock(String profession) {
+    	
+    	Material jobBlock;
+    	
+    	switch(profession) {
+    	
+    	case "FISHERMAN" : 
+    		jobBlock = Material.BARREL;
+    		break;
+    	case "CARTOGRAPHER" : 
+    		jobBlock = Material.CARTOGRAPHY_TABLE;
+    		break;
+    	case "BUTCHER" : 
+    		jobBlock = Material.SMOKER;
+    		break;
+    	case "TOOLSMITH" : 
+    		jobBlock = Material.SMITHING_TABLE;
+    		break;
+    	case "WEAPONSMITH" : 
+    		jobBlock = Material.GRINDSTONE;
+    		break;
+    	case "ARMORER" : 
+    		jobBlock = Material.BLAST_FURNACE;
+    		break;
+    	case "LEATHERWORKER" : 
+    		jobBlock = Material.CAULDRON;
+    		break;
+    	case "CLERIC" : 
+    		jobBlock = Material.BREWING_STAND;
+    		break;
+    	case "FARMER" : 
+    		jobBlock = Material.COMPOSTER;
+    		break;
+    	case "FLETCHER" : 
+    		jobBlock = Material.FLETCHING_TABLE;
+    		break;
+    	case "SHEPERD" : 
+    		jobBlock = Material.LOOM;
+    		break;
+    	case "LIBRARIAN" : 
+    		jobBlock = Material.LECTERN;
+    		break;
+    	case "MASON" : 
+    		jobBlock = Material.STONECUTTER;
+    		break;
+    	default : 
+    		jobBlock = Material.VILLAGER_SPAWN_EGG;
+    		break;
+    	}
+    	
+    	return jobBlock;
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
