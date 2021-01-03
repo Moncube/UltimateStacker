@@ -107,6 +107,15 @@ public class EntityStackManager {
         plugin.getDataManager().updateHost(stack);
         return stack;
     }
+    
+    public EntityStack updateStackSync(LivingEntity oldEntity, LivingEntity newEntity) {
+        EntityStack stack = stacks.remove(oldEntity.getUniqueId());
+        if (stack == null) return null;
+        stack.setHostEntity(newEntity);
+        stacks.put(newEntity.getUniqueId(), stack);
+        plugin.getDataManager().updateHostSync(stack);
+        return stack;
+    }
 
     @Deprecated
     public boolean isStacked(UUID entity) {

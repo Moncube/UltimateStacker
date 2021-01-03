@@ -75,6 +75,26 @@ public class EntityStack extends ColdEntityStack {
         
 
     }
+    
+    public void updateStackSync() {
+        if (createDuplicates != 0) {
+            List<StackedEntity> stackedEntities = new ArrayList<>();
+            for (int i = 0; i < createDuplicates; i++)
+                stackedEntities.add(addEntityToStackSilently(getStackedEntity(hostEntity, true)));
+            plugin.getDataManager().createStackedEntitiesSync(this, stackedEntities);
+
+            createDuplicates = 0;
+        }
+        if (!Settings.ENTITY_NAMETAGS.getBoolean()) return;
+        
+        Bukkit.getScheduler().runTask(UltimateStacker.getInstance(), () -> {
+            if (hostEntity == null) return;
+            hostEntity.setCustomNameVisible(!Settings.HOLOGRAMS_ON_LOOK_ENTITY.getBoolean());
+            hostEntity.setCustomName(Methods.compileEntityName(hostEntity, getAmount()));
+        });
+        
+
+    }
 
     public LivingEntity getHostEntity() {
         if (hostEntity == null) {

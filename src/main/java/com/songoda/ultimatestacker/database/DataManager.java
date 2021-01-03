@@ -115,10 +115,6 @@ public class DataManager extends DataManagerAbstract {
                 statement.setString(1, stack.getHostUniqueId().toString());
                 statement.setInt(2, stack.getCreateDuplicates());
                 statement.executeUpdate();
-                
-                System.out.println("createHostEntity");
-            }catch(Exception e) {
-            	System.out.println(e);
             }
             int stackId = this.lastInsertedId(connection, "host_entities");
             this.sync(() -> stack.setId(stackId));
@@ -134,12 +130,21 @@ public class DataManager extends DataManagerAbstract {
                 statement.setInt(2, hostStack.getId());
                 statement.setBytes(3, stackedEntity.getSerializedEntity());
                 statement.executeUpdate();
-                
-                System.out.println("createStackedEntity");
-            }catch(Exception e) {
-            	System.out.println(e);
             }
         }), "create");
+    }
+    
+    public void createStackedEntitySync(EntityStack hostStack, StackedEntity stackedEntity) {
+        this.sync(() -> this.databaseConnector.connect(connection -> {
+            String createSerializedEntity = "INSERT INTO " + this.getTablePrefix() + "stacked_entities (uuid, host, serialized_entity) VALUES (?, ?, ?)";
+            try (PreparedStatement statement = connection.prepareStatement(createSerializedEntity)) {
+                if (hostStack.getHostUniqueId() == null) return;
+                statement.setString(1, stackedEntity.getUniqueId().toString());
+                statement.setInt(2, hostStack.getId());
+                statement.setBytes(3, stackedEntity.getSerializedEntity());
+                statement.executeUpdate();
+            }
+        }));
     }
 
     public void createStackedEntities(ColdEntityStack hostStack, List<StackedEntity> stackedEntities) {
@@ -154,12 +159,24 @@ public class DataManager extends DataManagerAbstract {
                     statement.addBatch();
                 }
                 statement.executeBatch();
-                
-                System.out.println("createStackedEntities");
-            }catch(Exception e) {
-            	System.out.println(e);
             }
         }), "create");
+    }
+    
+    public void createStackedEntitiesSync(ColdEntityStack hostStack, List<StackedEntity> stackedEntities) {
+        this.sync(() -> this.databaseConnector.connect(connection -> {
+            String createSerializedEntity = "REPLACE INTO " + this.getTablePrefix() + "stacked_entities (uuid, host, serialized_entity) VALUES (?, ?, ?)";
+            try (PreparedStatement statement = connection.prepareStatement(createSerializedEntity)) {
+                if (hostStack.getHostUniqueId() == null) return;
+                for (StackedEntity entity : stackedEntities) {
+                    statement.setString(1, entity.getUniqueId().toString());
+                    statement.setInt(2, hostStack.getId());
+                    statement.setBytes(3, entity.getSerializedEntity());
+                    statement.addBatch();
+                }
+                statement.executeBatch();
+            }
+        }));
     }
 
     public void updateHost(ColdEntityStack hostStack) {
@@ -171,10 +188,19 @@ public class DataManager extends DataManagerAbstract {
                 statement.setInt(2, hostStack.getCreateDuplicates());
                 statement.setInt(3, hostStack.getId());
                 statement.executeUpdate();
-                
-                System.out.println("updateHost");
-            }catch(Exception e) {
-            	System.out.println(e);
+            }
+        }));
+    }
+    
+    public void updateHostSync(ColdEntityStack hostStack) {
+        this.sync(() -> this.databaseConnector.connect(connection -> {
+            String updateHost = "UPDATE " + this.getTablePrefix() + "host_entities SET uuid = ?, create_duplicates = ? WHERE id = ?";
+            try (PreparedStatement statement = connection.prepareStatement(updateHost)) {
+                if (hostStack.getHostUniqueId() == null) return;
+                statement.setString(1, hostStack.getHostUniqueId().toString());
+                statement.setInt(2, hostStack.getCreateDuplicates());
+                statement.setInt(3, hostStack.getId());
+                statement.executeUpdate();
             }
         }));
     }
@@ -185,20 +211,12 @@ public class DataManager extends DataManagerAbstract {
             try (PreparedStatement statement = connection.prepareStatement(deleteHost)) {
                 statement.setInt(1, stack.getId());
                 statement.executeUpdate();
-                
-                System.out.println("deleteHost host");
-            }catch(Exception e) {
-            	System.out.println(e);
             }
 
             String deleteStackedEntities = "DELETE FROM " + this.getTablePrefix() + "stacked_entities WHERE host = ?";
             try (PreparedStatement statement = connection.prepareStatement(deleteStackedEntities)) {
                 statement.setInt(1, stack.getId());
                 statement.executeUpdate();
-                
-                System.out.println("deleteHost stacked");
-            }catch(Exception e) {
-            	System.out.println(e);
             }
         }));
     }
@@ -209,14 +227,20 @@ public class DataManager extends DataManagerAbstract {
             try (PreparedStatement statement = connection.prepareStatement(deleteStackedEntity)) {
                 statement.setString(1, uuid.toString());
                 statement.executeUpdate();
-                
-                System.out.println("deleteStackedEntity");
-            }catch(Exception e) {
-            	System.out.println(e);
             }
         }));
     }
-
+    
+    public void deleteStackedEntitySync(UUID uuid) {
+        this.sync(() -> this.databaseConnector.connect(connection -> {
+            String deleteStackedEntity = "DELETE FROM " + this.getTablePrefix() + "stacked_entities WHERE uuid = ?";
+            try (PreparedStatement statement = connection.prepareStatement(deleteStackedEntity)) {
+                statement.setString(1, uuid.toString());
+                statement.executeUpdate();
+            }
+        }));
+    }
+    
     public void deleteStackedEntities(List<StackedEntity> entities) {
         this.async(() -> this.databaseConnector.connect(connection -> {
             String deleteStackedEntities = "DELETE FROM " + this.getTablePrefix() + "stacked_entities WHERE uuid = ?";
@@ -227,10 +251,6 @@ public class DataManager extends DataManagerAbstract {
                     statement.addBatch();
                 }
                 statement.executeBatch();
-                
-                System.out.println("deleteStackedEntities");
-            }catch(Exception e) {
-            	System.out.println(e);
             }
         }));
     }

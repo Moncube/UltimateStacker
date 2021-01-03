@@ -112,7 +112,29 @@ public class ColdEntityStack implements Stackable {
 
         return newEntity;
     }
+    
+    public LivingEntity takeOneAndSpawnEntitySync(Location location) {
+        if (stackedEntities.isEmpty()) return null;
+        NBTEntity nbtEntity = NmsManager.getNbt().newEntity();
+        nbtEntity.deSerialize(stackedEntities.getFirst().getSerializedEntity());
 
+        for (CustomEntity customEntity : plugin.getCustomEntityManager().getRegisteredCustomEntities()) {
+            String identifier = customEntity.getPluginName() + "_UltimateStacker";
+            if (!nbtEntity.has(identifier)) continue;
+            LivingEntity entity = customEntity.spawnFromIdentifier(nbtEntity.getString(identifier), location);
+            if (entity == null) continue;
+            stackedEntities.removeFirst();
+            plugin.getDataManager().deleteStackedEntitySync(entity.getUniqueId());
+            return entity;
+        }
+
+        LivingEntity newEntity = (LivingEntity) nbtEntity.spawn(location);
+        stackedEntities.removeFirst();
+        plugin.getDataManager().deleteStackedEntitySync(newEntity.getUniqueId());
+
+        return newEntity;
+    }
+    
     @Override
     public int getAmount() {
         return stackedEntities.size() + 1;

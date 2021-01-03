@@ -61,35 +61,28 @@ public class InteractListeners implements Listener {
     		
     		if(item.getType() == Material.VILLAGER_SPAWN_EGG) {
     			
-    			ItemMeta im = item.getItemMeta();
-    			List<String> lore = im.getLore();
-    			
                 net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
                 if(NMSitem.getTag().hasKey("uuid")) {
                 
-				//String uuid = lore.get(i).replaceAll("§", "");
-				
-				//String uuid = lore.get(i).replaceAll("§", "");
-				
 				//System.out.println("uuid : "+uuid);
 				
 					for (Entity e : event.getWhoClicked().getNearbyEntities(5, 5, 5)){
 						
 						if(plugin.getEntityStackManager().isStackedAndLoaded((LivingEntity)e)) {
 							
-							System.out.println("loaded");
+							//System.out.println("loaded");
 							
 							EntityStack stack = plugin.getEntityStackManager().getStack((LivingEntity)e);
 							
 							for(int id : stacks.keySet()) {
 								
-								System.out.println("id : "+id);
+								//System.out.println("id : "+id);
 								
-								System.out.println("id stack : "+stack.getId());
+								//System.out.println("id stack : "+stack.getId());
 	
 								if(id==stack.getId()) {
 									
-									System.out.println("same stack id");
+									//System.out.println("same stack id");
 									
 									HashMap<UUID,Villager> villagerHashMap = stacks.get(id);
 									
@@ -99,26 +92,30 @@ public class InteractListeners implements Listener {
 										
 										//System.out.println(pnjTest(villager.getUniqueId().toString()));
 										
-										System.out.println("tag : "+NMSitem.getTag().getString("uuid"));
+										//System.out.println("tag : "+NMSitem.getTag().getString("uuid"));
 										
 										if(villager.getUniqueId().toString().equals(NMSitem.getTag().getString("uuid"))) {
 											
-											System.out.println("changement host");
+											//System.out.println("changement host");
 											
 				                	        for(StackedEntity se : stack.stackedEntities) {
 				                	        	
 				                	        	if(se.getUniqueId()==villagerStackedUuid) {
 				                	        		
+				                	        		StackedEntity seHost = stack.getHostAsStackedEntity();
 	    				        					LivingEntity entity = stack.getHostEntity();
 	    				            				entity.remove();
 					                	        	NBTEntity nbtEntity = NmsManager.getNbt().newEntity();
 					                	            nbtEntity.deSerialize(se.getSerializedEntity());
 					                	            LivingEntity newEntity = (LivingEntity) nbtEntity.spawn(e.getLocation());
 					                	            stack.stackedEntities.remove(se);
-					                	            plugin.getDataManager().deleteStackedEntity(newEntity.getUniqueId());
-					                	            plugin.getEntityStackManager().updateStack(entity, newEntity);
+					                	            plugin.getDataManager().deleteStackedEntitySync(newEntity.getUniqueId());
+					                	            
+					                	            plugin.getEntityStackManager().updateStackSync(entity, newEntity);
+					                	            stack.updateStackSync();
+
 	    				                	        stack.addEntityToStackLast(entity);
-	    				                	        stack.updateStack();
+	    				                	        plugin.getDataManager().createStackedEntitySync(stack,seHost);
 				                	        	}
 				                	        }   	       
 										}
@@ -132,33 +129,7 @@ public class InteractListeners implements Listener {
     		event.setCancelled(true);
 		}
     }
-    
-    
-    public static String convertToInvisibleString(String s) {
-    	
-    	String invString="";
-		for(char c : s.toCharArray()){
-		  invString+="§"+String.valueOf(c);
-		}
-		return invString;
-    }
-    
-    public static String pnjTest(String s) {
-    	
-    	String result="";
-    	char[] tab = s.toCharArray();
-    	for(int i=0;i<tab.length;i++) {
-    		if(i!=tab.length && i+1!=tab.length && tab[i+1]=='-') {
-    			result+=String.valueOf(tab[i]);
-    			result+=String.valueOf(tab[i+1]);
-    		}
-    		if(i+1==tab.length) {
-    			result+=String.valueOf(tab[i]);
-    		}
-    	}
-    	return result;
-    }
-    
+
     @EventHandler(priority = EventPriority.HIGH)
     public void onVillagerInteract(PlayerInteractEntityEvent event)
     {
@@ -173,36 +144,21 @@ public class InteractListeners implements Listener {
         	
         	if(stack.getAmount()>1) {
         		
-        		int nbr = stack.getAmount();
-        		
         		if(!player.isSneaking()) {
-        		
-        			/*
-        			List<Entity> entites =  player.getNearbyEntities(30, 30, 30);
-        			*/
+        			/* A determiner */
         		}	
         		else {
         			
-        			//player.sendMessage("taille se : "+stack.getAmount());
-        			
         			HashMap<UUID,Villager> villagerHashMap = new HashMap<UUID,Villager>();
         			List<Villager> liste = new ArrayList<>();
-        			
-        			List<StackedEntity> seList = new ArrayList<>();
-        			
-        			EntityStack lastStack = null;
         			
         			int nb = stack.getAmount();
         			
         			for(int i=0;i<nb;i++) {
         				
-        				player.sendMessage("i = "+i);
         				StackedEntity se = stack.getHostAsStackedEntity();
         				LivingEntity le = stack.getHostEntity();
         				
-        				player.sendMessage(le.getUniqueId().toString());
-        				
-            	      
         				Villager villager = (Villager)le;
         				liste.add(villager);
         				
@@ -210,54 +166,17 @@ public class InteractListeners implements Listener {
         			
     					entity = stack.getHostEntity();
         				entity.remove();
-        			
-        				//plugin.getDataManager().deleteStackedEntity(entity.getUniqueId());
-        				
-            	        LivingEntity newEntity2 = stack.takeOneAndSpawnEntity(entity.getLocation());
-            	        if(newEntity2 == null) {
-            	        	player.sendMessage("newEntity2 null");
-            	        }
-            	        //plugin.getDataManager().deleteStackedEntity(stack.getHostUniqueId());//?
-            	        stack = plugin.getEntityStackManager().updateStack(entity, newEntity2);
-            	        if(stack == null) {
-            	        	player.sendMessage("stack null");
-            	        }
-            	        
-            	        
-            	        stack.updateStack();
-            	        
-            	        player.sendMessage("amount : "+stack.getAmount());
-            	        
-            	        
+            	        LivingEntity newEntity2 = stack.takeOneAndSpawnEntitySync(entity.getLocation());
+            	        stack = plugin.getEntityStackManager().updateStackSync(entity, newEntity2);//
+            	        stack.updateStackSync();
             	        stack.addEntityToStackLast(entity);
-            	        if(i!=10) {
-            	        	player.sendMessage("création entity bd :"+se.getUniqueId());
-        					plugin.getDataManager().createStackedEntity(stack,se);
-        					//seList.add(se);
-        				}
-        				
+    					plugin.getDataManager().createStackedEntitySync(stack,se);
         			}
         			
-        			/*
-        			for(StackedEntity se : seList) {
-        				player.sendMessage("creation entity bd : "+se.getUniqueId().toString());
-        			}
-        			
-        			plugin.getDataManager().createStackedEntities(stack, seList);
-        			*/
-        			
-        			/*
-        	        List<StackedEntity> seList = new ArrayList<StackedEntity>();
-        	        for(StackedEntity seEntity : stack.stackedEntities) {
-        	        	seList.add(seEntity);
-        	        }
-        	        
-        	        //plugin.getDataManager().deleteStackedEntities(seList);
-        	        plugin.getDataManager().createStackedEntities(stack, seList);
-        	        
-        	        */
         			stacks.put(stack.getId(),villagerHashMap);
         			
+        			
+        			/* ------------------- PARTIE INVENTAIRE ------------------ */
         			
         			Inventory inv = Bukkit.createInventory(null,54,"§aInterface PNJs");			
                     ItemStack glass = new ItemStack(Material.LIGHT_BLUE_STAINED_GLASS_PANE,1);
@@ -284,26 +203,8 @@ public class InteractListeners implements Listener {
                             	
                             	Villager villagerEntity = liste.get(indexList);
                             	
-                            	//Location loc = villagerEntity.getMemory(MemoryKey.JOB_SITE);
-                            	
-                            	/*
-                            	List<MerchantRecipe> recipes = villagerEntity.getRecipes();
-                            		
-                            	if(recipes!=null) {
-                            		
-                            		for(MerchantRecipe mr : recipes) {
-                            			
-                            			
-                            		}
-                            	}
-                            	*/
-                            	
-                            	List<String> lore = new ArrayList<String>();
-                            	
+                            	List<String> lore = new ArrayList<String>();          	
                             	lore.add(villagerEntity.getProfession().toString());
-                        		
-                        		//lore.add(convertToInvisibleString(villagerEntity.getUniqueId().toString()));
-                        		
                         		imEgg.setLore(lore);
                         		egg.setItemMeta(imEgg);
                         		
@@ -320,7 +221,6 @@ public class InteractListeners implements Listener {
                     }		
                     event.setCancelled(true);
     				player.openInventory(inv);
-	
         		}
         	}
         }
