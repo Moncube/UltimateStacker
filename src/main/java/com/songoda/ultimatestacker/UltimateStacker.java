@@ -17,6 +17,7 @@ import com.songoda.core.utils.TextUtils;
 import com.songoda.ultimatestacker.commands.CommandConvert;
 import com.songoda.ultimatestacker.commands.CommandGiveSpawner;
 import com.songoda.ultimatestacker.commands.CommandLootables;
+import com.songoda.ultimatestacker.commands.CommandMoncube;
 import com.songoda.ultimatestacker.commands.CommandReload;
 import com.songoda.ultimatestacker.commands.CommandRemoveAll;
 import com.songoda.ultimatestacker.commands.CommandSettings;
@@ -45,20 +46,30 @@ import com.songoda.ultimatestacker.stackable.spawner.SpawnerStack;
 import com.songoda.ultimatestacker.stackable.spawner.SpawnerStackManager;
 import com.songoda.ultimatestacker.tasks.StackingTask;
 import com.songoda.ultimatestacker.utils.Methods;
+import com.songoda.ultimatestacker.utils.Paire;
+
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.World;
+import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.PluginManager;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 public class UltimateStacker extends SongodaPlugin {
@@ -84,6 +95,10 @@ public class UltimateStacker extends SongodaPlugin {
     private DatabaseConnector databaseConnector;
     private DataMigrationManager dataMigrationManager;
     private DataManager dataManager;
+    
+    
+    //PapiCapi
+    public static Map<CreatureSpawner, Paire<Integer, Location>> waitingToSpawnFromSpawner = new HashMap<>();
 
     public static UltimateStacker getInstance() {
         return INSTANCE;
@@ -99,6 +114,23 @@ public class UltimateStacker extends SongodaPlugin {
 
     @Override
     public void onPluginDisable() {
+    	for ( Player player : Bukkit.getOnlinePlayers() ) {
+    		player.saveData();
+    	}
+    	System.out.println("[UltimateStacker/MONCUBE] Saved player's data");
+    	
+    	for( World world : Bukkit.getWorlds() ) {
+    		world.save();
+    	}
+    	System.out.println("[UltimateStacker/MONCUBE] Saved worlds data");
+    	
+    	
+    	for( BukkitTask task : Bukkit.getScheduler().getPendingTasks() ) {
+    		if ( task.getOwner().equals(this) )
+    			task.cancel();
+    	}
+    	System.out.println("[UltimateStacker/MONCUBE] Cancelled all tasks");
+    	
         this.dataManager.bulkUpdateSpawners(this.spawnerStackManager.getStacks());
         HologramManager.removeAllHolograms();
     }
@@ -224,7 +256,52 @@ public class UltimateStacker extends SongodaPlugin {
                 new _2_EntityStacks(),
                 new _3_BlockStacks());
         this.dataMigrationManager.runMigrations();
+        
+        
+        
+        //PapiCapi
+        World islandsWorld = Bukkit.getWorld("askyblock");
+        Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
+			
+			@Override
+			public void run() {
+				
+				for ( Entry<CreatureSpawner, Paire<Integer, Location>> entry : waitingToSpawnFromSpawner.entrySet() ) {
+					
+					LivingEntity entity = (LivingEntity)islandsWorld.spawnEntity(entry.getValue().getSecondElement(), entry.getKey().getSpawnedType());
+		            EntityStack stack = getEntityStackManager().addStack(entity);
+		            stack.createDuplicates(entry.getValue().getFirstElement() - 1);
+		            stack.updateStack();
+		            getStackingTask().attemptSplit(stack, entity);
+				}
+				waitingToSpawnFromSpawner.clear();
+			}
+			
+		}, 20*30, 20*60);
+        
+        getCommand("usmoncube").setExecutor(new CommandMoncube());
     }
+    
+    
+    /*
+     * PapiCapi
+     * Function to get the spawn location for spawners
+     * 
+     * Entry: the spawner location
+     * Exit: the spawn location or loc if spawn location not found
+     */
+    /*private Location getSpawnLoc(Location loc) {
+    	
+    	for( int x = (loc.getBlockX() - 4) ; x < (loc.getBlockX() + 4) ; x++ ) {
+			for ( int z = (loc.getBlockZ() - 4) ; z < (loc.getBlockZ() + 4) ; z++ ) {
+				if ( (loc.getWorld().getBlockAt(x, loc.getBlockY(), z).getType() == Material.AIR || loc.getWorld().getBlockAt(x, loc.getBlockY(), z).getType() == Material.WATER) && 
+						(loc.getWorld().getBlockAt(x, loc.getBlockY()+1, z).getType() == Material.AIR || loc.getWorld().getBlockAt(x, loc.getBlockY()+1, z).getType() == Material.WATER) ) {
+					return loc.getWorld().getBlockAt(x, loc.getBlockY(), z).getLocation();
+				}
+			}
+		}
+    	return loc;
+    }*/
 
     @Override
     public void onDataLoad() {
@@ -321,6 +398,10 @@ public class UltimateStacker extends SongodaPlugin {
     public StackingTask getStackingTask() {
         return stackingTask;
     }
+    
+    public void setStackingTask(StackingTask stackingTask) {
+		this.stackingTask = stackingTask;
+	}
 
     public Config getMobFile() {
         return mobFile;

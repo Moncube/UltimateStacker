@@ -12,6 +12,11 @@ commands:
     default: true
     aliases: [UltimateStacker]
     usage: /ultimatestacker reload
+  usmoncube:
+    description: Delete all threads and restarts stacking task
+    default: false
+    aliases: ultimatestackermoncube
+    usage: /ultimatestackermoncube
 permissions:
   ultimatestacker.*:
     description: Inherits all plugin permissions
