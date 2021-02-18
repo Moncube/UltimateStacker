@@ -1,5 +1,7 @@
 package com.songoda.ultimatestacker;
 
+import com.songoda.ultimatestacker.tasks.GolemSpawningTask;
+import com.songoda.ultimatestacker.tasks.RestockTask;
 import com.songoda.core.SongodaCore;
 import com.songoda.core.SongodaPlugin;
 import com.songoda.core.commands.CommandManager;
@@ -84,6 +86,8 @@ public class UltimateStacker extends SongodaPlugin {
     private CommandManager commandManager;
     private CustomEntityManager customEntityManager;
     private StackingTask stackingTask;
+    private RestockTask tradesTask;
+    private GolemSpawningTask golemTask;
 
     private DatabaseConnector databaseConnector;
     private DataMigrationManager dataMigrationManager;
@@ -99,7 +103,6 @@ public class UltimateStacker extends SongodaPlugin {
 
         // Register WorldGuard
         WorldGuardHook.addHook("mob-stacking", true);
-        
     }
 
     @Override
@@ -229,6 +232,7 @@ public class UltimateStacker extends SongodaPlugin {
                 new _2_EntityStacks(),
                 new _3_BlockStacks());
         this.dataMigrationManager.runMigrations();
+        
     }
 
     @Override
@@ -257,6 +261,7 @@ public class UltimateStacker extends SongodaPlugin {
             this.stackingTask = new StackingTask(this);
             getServer().getPluginManager().registerEvents(new ChunkListeners(entityStackManager), this);
         });
+    
         final boolean useBlockHolo = Settings.BLOCK_HOLOGRAMS.getBoolean();
         this.dataManager.getBlocks((blocks) -> {
             this.blockStackManager.addBlocks(blocks);
@@ -270,6 +275,9 @@ public class UltimateStacker extends SongodaPlugin {
                 }
             }
         });
+        
+        this.tradesTask = new RestockTask(this); // Ajout de la nouvelle task qui gère les reset de trades
+        this.golemTask = new GolemSpawningTask(this);
     }
 
     public void addExp(Player player, EntityStack stack) {
@@ -325,6 +333,14 @@ public class UltimateStacker extends SongodaPlugin {
 
     public StackingTask getStackingTask() {
         return stackingTask;
+    }
+    
+    public RestockTask getTradesTask() {
+    	return tradesTask;
+    }
+    
+    public GolemSpawningTask getGolemTask() {
+    	return golemTask;
     }
 
     public Config getMobFile() {
