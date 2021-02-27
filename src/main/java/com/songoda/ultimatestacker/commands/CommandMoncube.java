@@ -22,6 +22,7 @@ public class CommandMoncube implements CommandExecutor {
 	    			
 	    	}
 			UltimateStacker.getInstance().setStackingTask(new StackingTask(UltimateStacker.getInstance()));
+			UltimateStacker.getInstance().startSpawnerAndFarmsActivity();
 		}
 		return true;
 	}
