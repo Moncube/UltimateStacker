@@ -126,6 +126,7 @@ public class StackingTask extends BukkitRunnable {
                 || entity.hasMetadata("inLove")
                 // Or in breeding cooldown.
                 || entity.hasMetadata("breedCooldown"))
+
             return false;
 
         // Allow spawn if stackreasons are set and match, or if from a spawner
@@ -292,6 +293,7 @@ public class StackingTask extends BukkitRunnable {
                     && plugin.getCustomEntityManager().getCustomEntity(entity) == null) {
                 processed.add(livingEntity.getUniqueId());
                 newStack.destroy();
+                System.out.println("stackingTask");
                 return;
             }
 
@@ -320,6 +322,7 @@ public class StackingTask extends BukkitRunnable {
 
         // Destroy the stack.
         stack.destroy();
+        System.out.println("attemptSplit");
 
         Bukkit.getScheduler().runTask(plugin, () -> {
             for (int i = stackSize; i > 0; i -= maxEntityStackAmount) {

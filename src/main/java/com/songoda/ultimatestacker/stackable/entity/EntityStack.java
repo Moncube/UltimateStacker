@@ -44,8 +44,10 @@ public class EntityStack extends ColdEntityStack {
     @Override
     public List<StackedEntity> takeEntities(int amount) {
         List<StackedEntity> entities = super.takeEntities(amount);
-        if (this.stackedEntities.isEmpty())
-            destroy(true);
+        if (this.stackedEntities.isEmpty()) {
+        	destroy(true);
+        }
+            
         return entities;
     }
 
@@ -152,8 +154,10 @@ public class EntityStack extends ColdEntityStack {
 
         updateStack();
 
-        if (stackedEntities.isEmpty())
-            destroy();
+        if (stackedEntities.isEmpty()) {
+        	destroy();
+        }
+            
     }
 
     public void onDeath(LivingEntity killed, List<Drop> drops, boolean custom, int droppedExp, EntityDeathEvent event) {
@@ -201,8 +205,9 @@ public class EntityStack extends ColdEntityStack {
     }
 
     public void destroy(boolean full) {
-        if (full)
-            plugin.getEntityStackManager().removeStack(this.hostUniqueId);
+        if (full) {
+        	plugin.getEntityStackManager().removeStack(this.hostUniqueId);
+        }  
         if (hostEntity != null) {
             hostEntity.setCustomNameVisible(false);
             hostEntity.setCustomName(null);

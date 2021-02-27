@@ -50,9 +50,11 @@ public class InteractListeners implements Listener {
     
     private HashMap<Integer,HashMap<UUID,Villager>> stacks = new HashMap<Integer,HashMap<UUID,Villager>>();
         
-    private HashMap<Player,HashMap<Integer,List<Inventory>>> tempInventories = new HashMap<Player,HashMap<Integer,List<Inventory>>>();
-    
-    private HashMap<Player,HashMap<Integer,ItemStack>> lastAddon = new HashMap<Player,HashMap<Integer,ItemStack>>();
+    private HashMap<Player,HashMap<Integer,List<Inventory>>> achats = new HashMap<Player,HashMap<Integer,List<Inventory>>>();
+    private HashMap<Player,HashMap<Integer,List<Inventory>>> ventes = new HashMap<Player,HashMap<Integer,List<Inventory>>>();
+    private HashMap<Player,HashMap<Integer,List<Inventory>>> parcours = new HashMap<Player,HashMap<Integer,List<Inventory>>>();
+        
+    //private HashMap<UUID,Villager> stackedVillagers = new HashMap<UUID,Villager>();
     
     private List<Villager> toRename = new ArrayList<>();
     
@@ -77,78 +79,129 @@ public class InteractListeners implements Listener {
 				if(item.getItemMeta().getDisplayName().equals("§4Fermer")) {
 					event.setCancelled(true);
 					List<Inventory> invs = null;
+					boolean pass=false;
 					
-					ItemStack searchedItem = null;
-							
-					if(lastAddon.containsKey((Player)event.getWhoClicked())) {
-						for(Player aPlayer : lastAddon.keySet()){
-							if(aPlayer.equals((Player)event.getWhoClicked())) {
-								if(lastAddon.get(aPlayer).containsKey(getStack(event).getId())) {
-									searchedItem = lastAddon.get(aPlayer).get(getStack(event).getId());
-								}
-							}
+					if(parcours.containsKey((Player)event.getWhoClicked())) {
+						HashMap<Integer,List<Inventory>> dic = parcours.get((Player)event.getWhoClicked());
+						if(dic.containsKey(NMSitem.getTag().getInt("id"))) {
+							invs = dic.get(NMSitem.getTag().getInt("id"));
+							pass = true;
 						}
-						
 					}
-
-					if(iv.getTitle().contains("§aMatériaux recherchés")) {
-						invs = getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event),"Parcours",searchedItem,null);
+					
+					if(pass==false) {
+						invs = getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event),"Parcours",null,null);
 					}
 					else {
-						invs = getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event),"Parcours",null,searchedItem);
-					}
-					
-					if(invs!=null) {
 						HashMap<Integer,List<Inventory>> inventories;
-						if(tempInventories.containsKey((Player)event.getWhoClicked())) {
-							inventories = tempInventories.get((Player)event.getWhoClicked());
+						if(parcours.containsKey((Player)event.getWhoClicked())) {
+							inventories = parcours.get((Player)event.getWhoClicked());
 						}
 						else {
 							inventories = new HashMap<Integer,List<Inventory>>();
 						}
 						inventories.put(getStack(event).getId(), invs);
-						tempInventories.put((Player)event.getWhoClicked(),inventories);
-						event.getWhoClicked().openInventory(invs.get(0));
+						parcours.put((Player)event.getWhoClicked(),inventories);
 					}
-					else
-						event.getWhoClicked().sendMessage("§4Erreur dans la recherche !");
+					
+					event.getWhoClicked().openInventory(invs.get(0));
 					
 					return;
 				}
 			}
 			
 			if(item.hasItemMeta()) {
-				if(item.getItemMeta().getDisplayName().equals("Page suivante")) {
+				if(item.getItemMeta().getDisplayName().equals("§5Page suivante")) {
 					
 					String s="";
-					for(char c : item.getItemMeta().getDisplayName().toCharArray()) {
-						if(Character.isDigit(c)) {
-							s+=c;
+					char[] c = iv.getTitle().toCharArray();
+					for(int i=0;i<c.length;i++) {
+						if(Character.isDigit(c[i]) && c[i-1]!='§') {
+							s+=c[i];
 						}
 					}
 					int page = Integer.valueOf(s);
+										
+					boolean valid = true;
 					
-					for(Player aPlayer : tempInventories.keySet()) {
-						if(aPlayer.equals(event.getWhoClicked())) {
-							event.getWhoClicked().openInventory(tempInventories.get(aPlayer).get(getStack(event)).get(page+1));
+					HashMap<Player, HashMap<Integer, List<Inventory>>> inventaires;
+					
+					if(iv.getTitle().contains("§aMatériaux recherchés")) {
+						inventaires = achats;
+					}
+					else
+					{
+						inventaires = ventes;
+					}
+					
+					if(inventaires.containsKey((Player)event.getWhoClicked())) {
+						
+						HashMap<Integer,List<Inventory>> playerInventories = inventaires.get((Player)event.getWhoClicked());
+						
+						if(playerInventories.containsKey(NMSitem.getTag().getInt("id"))) {
+							event.getWhoClicked().openInventory(playerInventories.get(NMSitem.getTag().getInt("id")).get(page)); //Decalage de 1 
 						}
+						else {
+							valid = false;
+						}
+					}
+					else {
+	    				valid = false;
+					}
+					
+					if(valid==false) {
+	    				ItemMeta im = item.getItemMeta();
+	    				im.setDisplayName("§5§o§m"+"Page suivante");
+	    				im.setLore(Arrays.asList("§4Erreur lors de l'obtention de l'inventaire ! "));
+	    				item.setItemMeta(im);
+	    				((Player)event.getWhoClicked()).updateInventory();
 					}
 				}
 				
-				if(item.getItemMeta().getDisplayName().equals("Page précédente")) {
+				if(item.getItemMeta().getDisplayName().equals("§5Page précédente")) {
 					
 					String s="";
-					for(char c : item.getItemMeta().getDisplayName().toCharArray()) {
-						if(Character.isDigit(c)) {
-							s+=c;
+					char[] c = iv.getTitle().toCharArray();
+					for(int i=0;i<c.length;i++) {
+						if(Character.isDigit(c[i]) && c[i-1]!='§') {
+							s+=c[i];
 						}
 					}
 					int page = Integer.valueOf(s);
 					
-					for(Player aPlayer : tempInventories.keySet()) {
-						if(aPlayer.equals(event.getWhoClicked())) {
-							event.getWhoClicked().openInventory(tempInventories.get(aPlayer).get(getStack(event)).get(page-1));
+					boolean valid = true;
+					
+					HashMap<Player, HashMap<Integer, List<Inventory>>> inventaires;
+					
+					if(iv.getTitle().contains("§aMatériaux recherchés")) {
+						inventaires = achats;
+					}
+					else
+					{
+						inventaires = ventes;
+					}
+					
+					if(inventaires.containsKey((Player)event.getWhoClicked())) {
+						
+						HashMap<Integer,List<Inventory>> playerInventories = inventaires.get((Player)event.getWhoClicked());
+						
+						if(playerInventories.containsKey(NMSitem.getTag().getInt("id"))) {
+							event.getWhoClicked().openInventory(playerInventories.get(NMSitem.getTag().getInt("id")).get(page-2)); //Decalage de 1
 						}
+						else {
+							valid = false;
+						}
+					}
+					else {
+	    				valid = false;
+					}
+					
+					if(valid==false) {
+	    				ItemMeta im = item.getItemMeta();
+	    				im.setDisplayName("§5§o§m"+"Page précédente");
+	    				im.setLore(Arrays.asList("§4Erreur lors de l'obtention de l'inventaire ! "));
+	    				item.setItemMeta(im);
+	    				((Player)event.getWhoClicked()).updateInventory();
 					}
 				}
 			}
@@ -166,19 +219,18 @@ public class InteractListeners implements Listener {
                 
                 HashMap<Integer,ItemStack> itemHashMap = new HashMap<Integer,ItemStack>();
                 itemHashMap.put(getStack(event).getId(), searchedItem);
-				lastAddon.put((Player)event.getWhoClicked(), itemHashMap);
 				
 				invs = getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event), "Parcours", null,item);
 				
 				HashMap<Integer,List<Inventory>> inventories;
-				if(tempInventories.containsKey((Player)event.getWhoClicked())) {
-					inventories = tempInventories.get((Player)event.getWhoClicked());
+				if(parcours.containsKey((Player)event.getWhoClicked())) {
+					inventories = parcours.get((Player)event.getWhoClicked());
 				}
 				else {
 					inventories = new HashMap<Integer,List<Inventory>>();
 				}
 				inventories.put(getStack(event).getId(), invs);
-				tempInventories.put((Player)event.getWhoClicked(),inventories);
+				parcours.put((Player)event.getWhoClicked(),inventories);
 				
 				inventory = invs.get(0);
 				
@@ -193,19 +245,18 @@ public class InteractListeners implements Listener {
                 
                 HashMap<Integer,ItemStack> itemHashMap = new HashMap<Integer,ItemStack>();
                 itemHashMap.put(getStack(event).getId(), searchedItem);
-				lastAddon.put((Player)event.getWhoClicked(), itemHashMap);
 				
 				invs = getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event), "Parcours", item,null);
 				
 				HashMap<Integer,List<Inventory>> inventories;
-				if(tempInventories.containsKey((Player)event.getWhoClicked())) {
-					inventories = tempInventories.get((Player)event.getWhoClicked());
+				if(parcours.containsKey((Player)event.getWhoClicked())) {
+					inventories = parcours.get((Player)event.getWhoClicked());
 				}
 				else {
 					inventories = new HashMap<Integer,List<Inventory>>();
 				}
 				inventories.put(getStack(event).getId(), invs);
-				tempInventories.put((Player)event.getWhoClicked(),inventories);
+				parcours.put((Player)event.getWhoClicked(),inventories);
 				
 				inventory = invs.get(0);
 				
@@ -302,18 +353,12 @@ public class InteractListeners implements Listener {
     				List<Inventory> invs = getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event), "Parcours", null, null);
     				Inventory inventaire = invs.get(0);
     				
-    				HashMap<Integer,List<Inventory>> removeInventory = tempInventories.get((Player)event.getWhoClicked());
+    				HashMap<Integer,List<Inventory>> removeInventory = parcours.get((Player)event.getWhoClicked());
     				if(removeInventory.containsKey(getStack(event).getId())) {
     					removeInventory.remove(getStack(event).getId());
-    					tempInventories.put((Player)event.getWhoClicked(),removeInventory);
+    					parcours.put((Player)event.getWhoClicked(),removeInventory);
     				}
 
-    				HashMap<Integer,ItemStack> removeAddon = lastAddon.get((Player)event.getWhoClicked());
-    				if(removeInventory.containsKey(getStack(event).getId())) {
-    					removeInventory.remove(getStack(event).getId());
-    					lastAddon.put((Player)event.getWhoClicked(),removeAddon);
-    				}
-                    
                     event.getWhoClicked().openInventory(inventaire);
     			}
     			
@@ -321,27 +366,89 @@ public class InteractListeners implements Listener {
     				List<Inventory> invs = getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event), "Parcours", null, null);
     				Inventory inventaire = invs.get(0);
     				
-    				HashMap<Integer,List<Inventory>> removeInventory = tempInventories.get((Player)event.getWhoClicked());
+    				HashMap<Integer,List<Inventory>> removeInventory = parcours.get((Player)event.getWhoClicked());
     				if(removeInventory.containsKey(getStack(event).getId())) {
     					removeInventory.remove(getStack(event).getId());
-    					tempInventories.put((Player)event.getWhoClicked(),removeInventory);
-    				}
-    				
-    				HashMap<Integer,ItemStack> removeAddon = lastAddon.get((Player)event.getWhoClicked());
-    				if(removeInventory.containsKey(getStack(event).getId())) {
-    					removeInventory.remove(getStack(event).getId());
-    					lastAddon.put((Player)event.getWhoClicked(),removeAddon);
+    					parcours.put((Player)event.getWhoClicked(),removeInventory);
     				}
     				
                     event.getWhoClicked().openInventory(inventaire);
     			}
     			
-    			if(displayName.contains("Suivant")) {
+    			if(item.hasItemMeta()) {
+    				if(item.getItemMeta().getDisplayName().equals("§5Page suivante")) {
+    					
+    					String s="";
+    					char[] c = iv.getTitle().toCharArray();
+    					for(int i=0;i<c.length;i++) {
+    						if(Character.isDigit(c[i]) && c[i-1]!='§') {
+    							s+=c[i];
+    						}
+    					}
+    					int page = Integer.valueOf(s);
+    					    					
+    					boolean valid = true;
+
+    					if(parcours.containsKey((Player)event.getWhoClicked())) {
+    						
+    						HashMap<Integer,List<Inventory>> playerInventories = parcours.get((Player)event.getWhoClicked());
+    						
+    						if(playerInventories.containsKey(NMSitem.getTag().getInt("id"))) {
+    							event.getWhoClicked().openInventory(playerInventories.get(NMSitem.getTag().getInt("id")).get(page)); //Decalage de 1 
+    						}
+    						else {
+    							valid = false;
+    						}
+    					}
+    					else {
+    	    				valid = false;
+    					}
+    					
+    					if(valid==false) {
+    	    				ItemMeta im = item.getItemMeta();
+    	    				im.setDisplayName("§5§o§m"+"Page suivante");
+    	    				im.setLore(Arrays.asList("§4Erreur lors de l'obtention de l'inventaire ! "));
+    	    				item.setItemMeta(im);
+    	    				((Player)event.getWhoClicked()).updateInventory();
+    					}
+    				}
     				
-    			}
-    			
-    			if(displayName.contains("Précédent")) {
-    				
+    				if(item.getItemMeta().getDisplayName().equals("§5Page précédente")) {
+    					
+    					String s="";
+    					char[] c = iv.getTitle().toCharArray();
+    					for(int i=0;i<c.length;i++) {
+    						if(Character.isDigit(c[i]) && c[i-1]!='§') {
+    							s+=c[i];
+    						}
+    					}
+    					int page = Integer.valueOf(s);
+    					
+    					boolean valid = true;
+    					
+    					if(parcours.containsKey((Player)event.getWhoClicked())) {
+    						
+    						HashMap<Integer,List<Inventory>> playerInventories = parcours.get((Player)event.getWhoClicked());
+    						
+    						if(playerInventories.containsKey(NMSitem.getTag().getInt("id"))) {
+    							event.getWhoClicked().openInventory(playerInventories.get(NMSitem.getTag().getInt("id")).get(page-2)); //Decalage de 1
+    						}
+    						else {
+    							valid = false;
+    						}
+    					}
+    					else {
+    	    				valid = false;
+    					}
+    					
+    					if(valid==false) {
+    	    				ItemMeta im = item.getItemMeta();
+    	    				im.setDisplayName("§5§o§m"+"Page précédente");
+    	    				im.setLore(Arrays.asList("§4Erreur lors de l'obtention de l'inventaire ! "));
+    	    				item.setItemMeta(im);
+    	    				((Player)event.getWhoClicked()).updateInventory();
+    					}
+    				}
     			}
     		}
     		
@@ -510,9 +617,7 @@ public class InteractListeners implements Listener {
     		
     		LivingEntity newEntity2 = stack.takeOneAndSpawnEntitySync(stack.getHostEntity().getLocation());
     		stack = plugin.getEntityStackManager().updateStackSync(entity, newEntity2);//
-	        stack.updateStackSync();  
-			//plugin.getDataManager().createStackedEntitySync(stack,se);
-    		
+	        stack.updateStackSync();  	
     	}
     	
     	for(StackedEntity se : stack.stackedEntities) {
@@ -549,15 +654,21 @@ public class InteractListeners implements Listener {
  			for(int i=0;i<nb;i++) {
  				
  				StackedEntity se = stack.getHostAsStackedEntity();
- 				LivingEntity le = stack.getHostEntity();    				
+ 				LivingEntity le = stack.getHostEntity();
+ 				
  				Villager villager = (Villager)le;
  				villageois.add(villager);
  				villagerHashMap.put(villager.getUniqueId(), villager);
- 			
+ 				/*
+ 				if(!(stackedVillagers.containsKey(se.getUniqueId()))) {
+ 					stackedVillagers.put(se.getUniqueId(),villager);
+ 					System.out.println("se put");
+ 				}
+ 				*/
 				LivingEntity entity = stack.getHostEntity();
  				entity.remove();
      	        LivingEntity newEntity2 = stack.takeOneAndSpawnEntitySync(entity.getLocation());
-     	        stack = plugin.getEntityStackManager().updateStackSync(entity, newEntity2);//
+     	        stack = plugin.getEntityStackManager().updateStackSync(entity, newEntity2);
      	        stack.updateStackSync();
      	        stack.addEntityToStackLast(entity);
 				plugin.getDataManager().createStackedEntitySync(stack,se);
@@ -613,6 +724,12 @@ public class InteractListeners implements Listener {
 	                    	imNext.setDisplayName("§5Page suivante");
 	                    	next.setItemMeta(imNext);
 	                    	
+                    		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(next);
+                    		NBTTagCompound comp = NMSitem.getTag();
+                           	comp.setInt("id",stack.getId());
+                           	NMSitem.setTag(comp);
+                           	next = CraftItemStack.asBukkitCopy(NMSitem);
+	                    	
 	                    	inv.setItem(50, next);
 	                    	
 	                    	invs.add(inv);
@@ -632,6 +749,12 @@ public class InteractListeners implements Listener {
 			                    	ItemMeta imLast = last.getItemMeta();
 			                    	imLast.setDisplayName("§5Page précédente");
 			                    	last.setItemMeta(imLast);
+			                    	
+		                    		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(last);
+		                    		NBTTagCompound comp = NMSitem.getTag();
+		                           	comp.setInt("id",stack.getId());
+		                           	NMSitem.setTag(comp);
+		                           	last = CraftItemStack.asBukkitCopy(NMSitem);
 			                    	
 			                    	inv.setItem(i2, last);
 			                    } 
@@ -772,7 +895,12 @@ public class InteractListeners implements Listener {
 	    			inv = Bukkit.createInventory(null,54,"§aMatériaux à vendre "+p);	
 	    		}	
 	    		
-	    		for(int i=0;i<itemstacks.size();i++) {
+	    		int size = itemstacks.size();
+	    		if(size==0) {
+	    			size=1;
+	    		}
+	    			
+	    		for(int i=0;i<size;i++) {
 	    			double temp = (int)i/36;
 		    		if(p!=temp+1 || i==0) {	
 		    			if(i!=0) {
@@ -829,27 +957,29 @@ public class InteractListeners implements Listener {
 		                } 
 		    		}
 		    		
-		    		if(itemstacks.get(i).getMaxStackSize()!=1) {
-		    			ItemStack is = new ItemStack(itemstacks.get(i).getType(),1);
-            	        
-	    				net.minecraft.server.v1_16_R3.ItemStack NMSitem2 = CraftItemStack.asNMSCopy(is);
-                        NBTTagCompound comp = NMSitem2.getOrCreateTag();
-                        comp.setInt("id",stack.getId());
-                        NMSitem2.setTag(comp);
-                        is = CraftItemStack.asBukkitCopy(NMSitem2);
-                 		
-		    			inv.addItem(is);
-		    		}
-		    		else {
-		    			ItemStack is = itemstacks.get(i);
-		    			
-                 		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(is);
-                        NBTTagCompound comp = NMSitem.getTag();
-                        comp.setInt("id",stack.getId());
-                        NMSitem.setTag(comp);
-                        is = CraftItemStack.asBukkitCopy(NMSitem);
-                        
-		    			inv.addItem(is);
+		    		if(itemstacks.size()!=0) {
+			    		if(itemstacks.get(i).getMaxStackSize()!=1) {
+			    			ItemStack is = new ItemStack(itemstacks.get(i).getType(),1);
+	            	        
+		    				net.minecraft.server.v1_16_R3.ItemStack NMSitem2 = CraftItemStack.asNMSCopy(is);
+	                        NBTTagCompound comp = NMSitem2.getOrCreateTag();
+	                        comp.setInt("id",stack.getId());
+	                        NMSitem2.setTag(comp);
+	                        is = CraftItemStack.asBukkitCopy(NMSitem2);
+	                 		
+			    			inv.addItem(is);
+			    		}
+			    		else {
+			    			ItemStack is = itemstacks.get(i);
+			    			
+	                 		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(is);
+	                        NBTTagCompound comp = NMSitem.getOrCreateTag();
+	                        comp.setInt("id",stack.getId());
+	                        NMSitem.setTag(comp);
+	                        is = CraftItemStack.asBukkitCopy(NMSitem);
+	                        
+			    			inv.addItem(is);
+			    		}
 		    		}
 	    		}
 	    	}
@@ -887,27 +1017,52 @@ public class InteractListeners implements Listener {
 	        		{
 	            		Villager v = (Villager)entity;
 	            		event.getPlayer().sendMessage(""+v.getRestocksToday());
-	            		
+
 	            		World w = event.getPlayer().getWorld();
 	            		event.getPlayer().sendMessage("getTime : "+w.getTime());
 	                 	
 	                 	EntityStack stack = plugin.getEntityStackManager().getStack(entity);
-	       	
-	         			boolean found = false;
+	                 	
+	                 	/*
+	                 	List<Villager> lesVillageois = new ArrayList<Villager>();
+	                 	
+	                 	for(StackedEntity se : stack.stackedEntities) {
+	                 		if(stackedVillagers.containsKey(se.getUniqueId())) {
+	                 			lesVillageois.add(stackedVillagers.get(se));
+	                 		}
+	                 	}
+	                 	
+	                 	if(stackedVillagers.containsKey(stack.getHostAsStackedEntity().getUniqueId())){
+	                 		lesVillageois.add(stackedVillagers.get(stack.getHostAsStackedEntity()));
+	                 	}
+	                 	
+	                 	event.getPlayer().sendMessage("list size: "+lesVillageois.size());
+	                 	event.getPlayer().sendMessage("stack amount: "+stack.getAmount());
+	                 	
+	                 	if(lesVillageois.size()==stack.getAmount()) {
+	                 		event.getPlayer().sendMessage("it works !!");
+	                 	}
+	                 	*/
 	         			List<Inventory> invs = null;
+	         			boolean found = false;
 	         			
-	         			for(Player aPlayer : tempInventories.keySet()) {
+	         			
+	         			for(Player aPlayer : parcours.keySet()) {
 	         				if(aPlayer.equals(event.getPlayer())) {
-	         					if(tempInventories.get(aPlayer).keySet().contains(stack.getId())) {
-	     	     					invs = tempInventories.get(aPlayer).get(stack.getId());
+	         					if(parcours.get(aPlayer).keySet().contains(stack.getId())) {
+	     	     					invs = parcours.get(aPlayer).get(stack.getId());
 	     	     					found = true;
+	     	     					System.out.println("inv parcours trouvé");
 	     						}
 	     					}
 	     				}
 	         			
-	         			
-	         			if(found==false)
+	         			if(found==false) {
 	         				invs = getSortedInventories(stack.getId(), stack, "Parcours", null, null);
+		         			HashMap<Integer,List<Inventory>> invsHashMap = new HashMap<Integer,List<Inventory>>();
+		         			invsHashMap.put(stack.getId(), invs);
+		         			parcours.put(event.getPlayer(), invsHashMap);
+	         			}
 	         			
 	         			event.getPlayer().openInventory(invs.get(0));
 	         			

@@ -43,7 +43,7 @@ public class GolemSpawningTask extends BukkitRunnable {
     public GolemSpawningTask(UltimateStacker plugin)
     {
         this.plugin = plugin;
-        runTaskTimer(plugin, 0, 500); //1000
+        runTaskTimer(plugin, 0, 1000); //1000
     }
     
     @Override
@@ -66,7 +66,7 @@ public class GolemSpawningTask extends BukkitRunnable {
     	        			/* ---- Détection d'un lit valide autour du villageois ---- */
     	        			
     	        			Boolean bedPass = false;
-    	        			ArrayList<Block> beds = getBeds(v.getLocation().getBlock(), 10);
+    	        			ArrayList<Block> beds = getBeds(v.getLocation().getBlock(), 8);
     	        			
     	        			for(int i=0;i<beds.size() && bedPass==false;i++) {
     	        				
@@ -206,22 +206,15 @@ public class GolemSpawningTask extends BukkitRunnable {
     	if(!l1.add(0, -1, 0).getBlock().isSolid()) {
     		valid = false;
     	}
-    	else {
-    		IronGolem ig = //
-    		BoundingBox bx = ig.getBoundingBox();
-    		if(l.getWorld().getNearbyEntities(l, x, y, z, EntityType.IRON_GOLEM)) {
-    			
-    		} 
-    		else {
-        		for(int i=0;i<3 && valid==true;i++) {
-            		Location l2 = l.clone();
-            		l2.add(0, i, 0);
-            		if(!l2.getBlock().isEmpty()) {
-            			valid = false;
-            		}
-            	}
+
+		for(int i=0;i<3 && valid==true;i++) {
+    		Location l2 = l.clone();
+    		l2.add(0, i, 0);
+    		if(!l2.getBlock().isEmpty()) {
+    			valid = false;
     		}
     	}
+			
     	return valid;
     }
     

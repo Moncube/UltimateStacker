@@ -197,7 +197,9 @@ public class UltimateStacker extends SongodaPlugin {
         pluginManager.registerEvents(new SheepDyeListeners(this), this);
 
         if (Settings.CLEAR_LAG.getBoolean() && pluginManager.isPluginEnabled("ClearLag"))
-            pluginManager.registerEvents(new ClearLagListeners(this), this);
+        	 pluginManager.registerEvents(new ClearLagListeners(this), this);
+
+           
 
         // Register Hooks
         if (pluginManager.isPluginEnabled("Jobs")) {
@@ -276,8 +278,8 @@ public class UltimateStacker extends SongodaPlugin {
             }
         });
         
-        this.tradesTask = new RestockTask(this); // Ajout de la nouvelle task qui gère les reset de trades
-        this.golemTask = new GolemSpawningTask(this);
+        this.tradesTask = new RestockTask(this); // Ajout task qui gère les reset de trades
+        this.golemTask = new GolemSpawningTask(this); // Ajout task qui gère le spawn des golems
     }
 
     public void addExp(Player player, EntityStack stack) {
