@@ -45,7 +45,6 @@ public class DataManager extends DataManagerAbstract {
     }
 
     public void updateSpawner(SpawnerStack spawnerStack) {
-    	//System.out.println("[UltimateStacker] updateSpawner at location: "+spawnerStack.getLocation());
         this.async(() -> this.databaseConnector.connect(connection -> {
             String updateSpawner = "UPDATE " + this.getTablePrefix() + "spawners SET amount = ? WHERE id = ?";
             try (PreparedStatement statement = connection.prepareStatement(updateSpawner)) {
@@ -58,7 +57,6 @@ public class DataManager extends DataManagerAbstract {
 
 
     public void createSpawner(SpawnerStack spawnerStack) {
-    	//System.out.println("[UltimateStacker] createSpawner at location: "+spawnerStack.getLocation());
         this.queueAsync(() -> this.databaseConnector.connect(connection -> {
 
             String createSpawner = "INSERT INTO " + this.getTablePrefix() + "spawners (amount, world, x, y, z) VALUES (?, ?, ?, ?, ?)";
@@ -77,7 +75,6 @@ public class DataManager extends DataManagerAbstract {
     }
 
     public void updateBlock(BlockStack blockStack) {
-    	//System.out.println("[UltimateStacker] updateBlock at location: "+blockStack.getLocation());
         this.async(() -> this.databaseConnector.connect(connection -> {
             if (blockStack.getAmount() == 0) return;
             String updateBlock = "UPDATE " + this.getTablePrefix() + "blocks SET amount = ? WHERE id = ?";
@@ -91,7 +88,6 @@ public class DataManager extends DataManagerAbstract {
 
 
     public void createBlock(BlockStack blockStack) {
-    	//System.out.println("[UltimateStacker] createBlock at location: "+blockStack.getLocation());
         this.queueAsync(() -> this.databaseConnector.connect(connection -> {
 
             String createSpawner = "INSERT INTO " + this.getTablePrefix() + "blocks (amount, material, world, x, y, z) VALUES (?, ?, ?, ?, ?, ?)";
@@ -112,8 +108,6 @@ public class DataManager extends DataManagerAbstract {
 
 
     public void createHostEntity(ColdEntityStack stack) {
-    	//if ( stack.getHostUniqueId() != null && Bukkit.getEntity(stack.getHostUniqueId()) != null )
-    		//System.out.println("[UltimateStacker] createHostEntity at location: "+ Bukkit.getEntity(stack.getHostUniqueId()).getLocation());
         this.queueAsync(() -> this.databaseConnector.connect(connection -> {
             if (stack == null || stack.getHostUniqueId() == null) return;
             String createSerializedEntity = "INSERT INTO " + this.getTablePrefix() + "host_entities (uuid, create_duplicates) VALUES (?, ?)";
