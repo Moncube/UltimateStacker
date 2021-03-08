@@ -126,7 +126,6 @@ public class StackingTask extends BukkitRunnable {
                 || entity.hasMetadata("inLove")
                 // Or in breeding cooldown.
                 || entity.hasMetadata("breedCooldown"))
-
             return false;
 
         // Allow spawn if stackreasons are set and match, or if from a spawner
@@ -165,6 +164,14 @@ public class StackingTask extends BukkitRunnable {
 
         // The amount that is stackable.
         int amountToStack = isStack ? stack.getAmount() : 1;
+        
+        //Beta addon villageois stackés sur le skyblock
+        if(livingEntity.getType()==EntityType.VILLAGER) {
+        	Boolean villagerFlag = WorldGuardHook.isEnabled() ? WorldGuardHook.getBooleanFlag(livingEntity.getLocation(), "villager-stacking") : null;
+        	if(villagerFlag == null || !villagerFlag) {
+        		return;
+        	}
+        }
 
         // Attempt to split our stack. If the split is successful then skip this entity.
         if (isStack && attemptSplit(stack, livingEntity)) return;
@@ -293,7 +300,6 @@ public class StackingTask extends BukkitRunnable {
                     && plugin.getCustomEntityManager().getCustomEntity(entity) == null) {
                 processed.add(livingEntity.getUniqueId());
                 newStack.destroy();
-                System.out.println("stackingTask");
                 return;
             }
 
@@ -322,7 +328,6 @@ public class StackingTask extends BukkitRunnable {
 
         // Destroy the stack.
         stack.destroy();
-        System.out.println("attemptSplit");
 
         Bukkit.getScheduler().runTask(plugin, () -> {
             for (int i = stackSize; i > 0; i -= maxEntityStackAmount) {

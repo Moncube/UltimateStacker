@@ -103,6 +103,9 @@ public class UltimateStacker extends SongodaPlugin {
 
         // Register WorldGuard
         WorldGuardHook.addHook("mob-stacking", true);
+        
+        // Ajout d'un hook villageois pour la béta de l'addon villager pour le sky
+        WorldGuardHook.addHook("villager-stacking", false);
     }
 
     @Override

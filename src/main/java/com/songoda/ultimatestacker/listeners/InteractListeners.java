@@ -14,6 +14,7 @@ import net.minecraft.server.v1_16_R3.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -38,6 +39,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
+import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
@@ -47,14 +49,12 @@ import org.bukkit.metadata.FixedMetadataValue;
 public class InteractListeners implements Listener {
 
     private final UltimateStacker plugin;
-    
-    private HashMap<Integer,HashMap<UUID,Villager>> stacks = new HashMap<Integer,HashMap<UUID,Villager>>();
-        
+            
     private HashMap<Player,HashMap<Integer,List<Inventory>>> achats = new HashMap<Player,HashMap<Integer,List<Inventory>>>();
     private HashMap<Player,HashMap<Integer,List<Inventory>>> ventes = new HashMap<Player,HashMap<Integer,List<Inventory>>>();
     private HashMap<Player,HashMap<Integer,List<Inventory>>> parcours = new HashMap<Player,HashMap<Integer,List<Inventory>>>();
         
-    //private HashMap<UUID,Villager> stackedVillagers = new HashMap<UUID,Villager>();
+    private HashMap<UUID,Villager> stackedVillagers = new HashMap<UUID,Villager>();
     
     private List<Villager> toRename = new ArrayList<>();
     
@@ -66,8 +66,17 @@ public class InteractListeners implements Listener {
     public void onVillagerGuiClick(InventoryClickEvent event) {
     	InventoryView iv = event.getView();
 		ItemStack item = event.getCurrentItem();
-		
+
 		if(iv.getTitle().contains("§aMatériaux recherchés") || iv.getTitle().contains("§aMatériaux à vendre")) {
+			
+			EntityStack stackTest = getStack(event);
+			if(stackTest==null) {
+				event.setCancelled(true);
+				event.getWhoClicked().closeInventory();
+				event.getWhoClicked().sendMessage("§4Ce stack de villageois n'existe plus !");
+				return;
+			}
+			
 			net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
 			
     		if(!(NMSitem.hasTag() && (NMSitem.getTag().hasKey("id") || NMSitem.getTag().hasKey("uuid")))) {
@@ -269,18 +278,30 @@ public class InteractListeners implements Listener {
 		if(iv.getTitle().equals("§aEffacer le nom du villageois ?")){
 			net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
 			if(item.getItemMeta().getDisplayName().equals("§aOui")) {
+				Villager toDelete = null;
 				for(Villager v : toRename) {
 					if(v.getUniqueId().toString().equals(NMSitem.getTag().getString("uuid"))) {
 						v.setCustomName(null);
-						toRename.remove(v);
+						toDelete = v;
 					}
 				}
+				toRename.remove(toDelete);
+				
 			}
 			event.setCancelled(true);
 			event.getWhoClicked().closeInventory();
 		}
 		
     	if(iv.getTitle().contains("§aInterface PNJs")) {
+    		
+    		EntityStack stackTest = getStack(event);
+    		if(stackTest==null) {
+    			event.setCancelled(true);
+    			event.getWhoClicked().closeInventory();
+    			event.getWhoClicked().sendMessage("§4Ce stack de villageois n'existe plus !");
+    			return;
+    		}
+    		
     		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
     		if(!(NMSitem.hasTag() && (NMSitem.getTag().hasKey("id") || NMSitem.getTag().hasKey("uuid")))) {
 				event.setCancelled(true);
@@ -323,6 +344,8 @@ public class InteractListeners implements Listener {
     	    		
     	    		if(villager == null) {
     	    			event.setCancelled(true);
+    	    			event.getWhoClicked().closeInventory();
+    	    			event.getWhoClicked().sendMessage("§4Ce villageois n'existe plus !");
     	    			return;
     	    		}
     	    		
@@ -349,7 +372,7 @@ public class InteractListeners implements Listener {
 
     			}
     			
-    			if(displayName.contains("§5Vente : ")) {
+    			if(displayName.contains("§5Vente : ") || displayName.contains("§5Achat : ")) {
     				List<Inventory> invs = getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event), "Parcours", null, null);
     				Inventory inventaire = invs.get(0);
     				
@@ -359,19 +382,6 @@ public class InteractListeners implements Listener {
     					parcours.put((Player)event.getWhoClicked(),removeInventory);
     				}
 
-                    event.getWhoClicked().openInventory(inventaire);
-    			}
-    			
-    			if(displayName.contains("§5Achat : ")) {
-    				List<Inventory> invs = getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event), "Parcours", null, null);
-    				Inventory inventaire = invs.get(0);
-    				
-    				HashMap<Integer,List<Inventory>> removeInventory = parcours.get((Player)event.getWhoClicked());
-    				if(removeInventory.containsKey(getStack(event).getId())) {
-    					removeInventory.remove(getStack(event).getId());
-    					parcours.put((Player)event.getWhoClicked(),removeInventory);
-    				}
-    				
                     event.getWhoClicked().openInventory(inventaire);
     			}
     			
@@ -456,6 +466,15 @@ public class InteractListeners implements Listener {
 		}
     	
     	if(iv.getTitle().equals("§aOptions PNJ")) {
+    		
+    		EntityStack stackTest = getStack(event);
+    		if(stackTest==null) {
+    			event.setCancelled(true);
+    			event.getWhoClicked().closeInventory();
+    			event.getWhoClicked().sendMessage("§4Ce stack de villageois n'existe plus !");
+    			return;
+    		}
+    		
     		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
     		
     		if(item == null) {
@@ -467,6 +486,13 @@ public class InteractListeners implements Listener {
     			
     			EntityStack stack = getStack(event);
     			Villager villager = getVillager(NMSitem.getTag().getString("uuid"),stack);
+    			
+    			if(villager==null) {
+    				event.setCancelled(true);
+    				event.getWhoClicked().closeInventory();
+    				event.getWhoClicked().sendMessage("§4Ce villageois n'existe plus !");
+    				return;
+    			}
 
     			if(item.getItemMeta().getDisplayName().equals("§5Accèder à l'inventaire")) {
     				spawnVillager(villager.getUniqueId().toString(),stack);
@@ -555,15 +581,10 @@ public class InteractListeners implements Listener {
     	
     	Villager villager = null;
 
-		for(int id : stacks.keySet()) {
-			if(id==stack.getId()) {
-				HashMap<UUID,Villager> villagerHashMap = stacks.get(id);
-				for(UUID villagerStackedUuid : villagerHashMap.keySet()) {
-					Villager v = villagerHashMap.get(villagerStackedUuid);
-					if(v.getUniqueId().toString().equals(searchedUuid)) {
-						villager = v;
-					}
-				}
+		for(UUID villagerStackedUuid : stackedVillagers.keySet()) {
+			Villager v = stackedVillagers.get(villagerStackedUuid);
+			if(v.getUniqueId().toString().equals(searchedUuid)) {
+				villager = v;
 			}
 		}
 		
@@ -577,7 +598,19 @@ public class InteractListeners implements Listener {
         for(StackedEntity se : stack.stackedEntities) {
         	if(se.getUniqueId().toString().equals(uuid)) {
         		StackedEntity seHost = stack.getHostAsStackedEntity();
-				LivingEntity entity = stack.getHostEntity();
+        		LivingEntity entity = stack.getHostEntity();
+        		
+        		/* --- SAUVEGARDE --- */
+        		
+        		if(stackedVillagers.containsKey(seHost.getUniqueId())) {
+        			stackedVillagers.put(seHost.getUniqueId(), (Villager)entity);
+        		}
+        		else {
+        			System.out.println("§4[UltimateStacker] Erreur de synchronisation des villageois");
+        		}
+        		
+        		/* ------------------ */
+        		
 				entity.remove();
 	        	NBTEntity nbtEntity = NmsManager.getNbt().newEntity();
 	            nbtEntity.deSerialize(se.getSerializedEntity());
@@ -605,8 +638,19 @@ public class InteractListeners implements Listener {
     	
     	if(stack.getHostAsStackedEntity().getUniqueId().toString().equals(uuid)) {
     		
-    		LivingEntity entity = stack.getHostEntity();
     		StackedEntity seHost = stack.getHostAsStackedEntity();
+    		LivingEntity entity = stack.getHostEntity();
+    		
+    		/* --- SAUVEGARDE --- */
+    		
+    		if(stackedVillagers.containsKey(seHost.getUniqueId())) {
+    			stackedVillagers.put(seHost.getUniqueId(), (Villager)entity);
+    		}
+    		else {
+    			System.out.println("§4[UltimateStacker] Erreur de synchronisation des villageois");
+    		}
+    		
+    		/* ------------------ */
     		
     		entity.remove();
     		
@@ -650,31 +694,43 @@ public class InteractListeners implements Listener {
 			List<Villager> villageois = new ArrayList<>();
 			HashMap<UUID,Villager> villagerHashMap = new HashMap<UUID,Villager>();
 			
- 			int nb = stack.getAmount();
- 			for(int i=0;i<nb;i++) {
- 				
- 				StackedEntity se = stack.getHostAsStackedEntity();
- 				LivingEntity le = stack.getHostEntity();
- 				
- 				Villager villager = (Villager)le;
- 				villageois.add(villager);
- 				villagerHashMap.put(villager.getUniqueId(), villager);
- 				/*
- 				if(!(stackedVillagers.containsKey(se.getUniqueId()))) {
- 					stackedVillagers.put(se.getUniqueId(),villager);
- 					System.out.println("se put");
- 				}
- 				*/
-				LivingEntity entity = stack.getHostEntity();
- 				entity.remove();
-     	        LivingEntity newEntity2 = stack.takeOneAndSpawnEntitySync(entity.getLocation());
-     	        stack = plugin.getEntityStackManager().updateStackSync(entity, newEntity2);
-     	        stack.updateStackSync();
-     	        stack.addEntityToStackLast(entity);
-				plugin.getDataManager().createStackedEntitySync(stack,se);
- 			}
+			List<Villager> villagers = getVillagers(stack);
+			
+			if(villagers==null) {
+				int nb = stack.getAmount();
+	 			for(int i=0;i<nb;i++) {
+	 				
+	 				StackedEntity se = stack.getHostAsStackedEntity();
+	 				LivingEntity le = stack.getHostEntity();
+	 				
+	 				Villager villager = (Villager)le;
+	 				villageois.add(villager);
+	 				villagerHashMap.put(villager.getUniqueId(), villager);
+	 				
+	 				if(!(stackedVillagers.containsKey(se.getUniqueId()))) {
+	 					stackedVillagers.put(se.getUniqueId(),villager);
+	 				}
+				
+					LivingEntity entity = stack.getHostEntity();
+	 				entity.remove();
+	     	        LivingEntity newEntity2 = stack.takeOneAndSpawnEntitySync(entity.getLocation());
+	     	        stack = plugin.getEntityStackManager().updateStackSync(entity, newEntity2);
+	     	        stack.updateStackSync();
+	     	        stack.addEntityToStackLast(entity);
+					plugin.getDataManager().createStackedEntitySync(stack,se);
+	 			}
+			}
+			else {
+				
+				villageois.add((Villager)stack.getHostEntity());
+				
+				for(Villager v : villagers) {
+					if(!(v.getUniqueId().equals(((Villager)stack.getHostEntity()).getUniqueId()))) {
+						villageois.add(v);
+					}
+				}
+			}
  			
- 			stacks.put(stack.getId(),villagerHashMap);
  			
  			/* -------------- PARTIE INVENTAIRES --------------- */
 			
@@ -691,7 +747,7 @@ public class InteractListeners implements Listener {
 	    	for(int i=0;i<villageois.size();i++) {
 	    		
 	    		Villager villagerEntity = villageois.get(i);
-	    		
+	    			    		
 	    		if(mode.equals("Parcours OUT") || mode.equals("Parcours IN")) {
 	    			if(mode.equals("Parcours OUT")) {
 	    				List<org.bukkit.inventory.MerchantRecipe> mrs = villagerEntity.getRecipes();
@@ -794,7 +850,7 @@ public class InteractListeners implements Listener {
 
 	                     	 if(i2==8) {
 	                     		 if(out==null) {
-	 	                	        ItemStack emerald = new ItemStack(Material.EMERALD);
+	 	                	        ItemStack emerald = new ItemStack(Material.EMERALD_ORE);
 		                	        ItemMeta imEmerald = glass.getItemMeta();
 		                	        imEmerald.setDisplayName("§5Acheter");
 		                	        emerald.setItemMeta(imEmerald);
@@ -1023,26 +1079,6 @@ public class InteractListeners implements Listener {
 	                 	
 	                 	EntityStack stack = plugin.getEntityStackManager().getStack(entity);
 	                 	
-	                 	/*
-	                 	List<Villager> lesVillageois = new ArrayList<Villager>();
-	                 	
-	                 	for(StackedEntity se : stack.stackedEntities) {
-	                 		if(stackedVillagers.containsKey(se.getUniqueId())) {
-	                 			lesVillageois.add(stackedVillagers.get(se));
-	                 		}
-	                 	}
-	                 	
-	                 	if(stackedVillagers.containsKey(stack.getHostAsStackedEntity().getUniqueId())){
-	                 		lesVillageois.add(stackedVillagers.get(stack.getHostAsStackedEntity()));
-	                 	}
-	                 	
-	                 	event.getPlayer().sendMessage("list size: "+lesVillageois.size());
-	                 	event.getPlayer().sendMessage("stack amount: "+stack.getAmount());
-	                 	
-	                 	if(lesVillageois.size()==stack.getAmount()) {
-	                 		event.getPlayer().sendMessage("it works !!");
-	                 	}
-	                 	*/
 	         			List<Inventory> invs = null;
 	         			boolean found = false;
 	         			
@@ -1052,16 +1088,30 @@ public class InteractListeners implements Listener {
 	         					if(parcours.get(aPlayer).keySet().contains(stack.getId())) {
 	     	     					invs = parcours.get(aPlayer).get(stack.getId());
 	     	     					found = true;
-	     	     					System.out.println("inv parcours trouvé");
 	     						}
 	     					}
 	     				}
 	         			
+	         			/*
+	         			//Check changement de métier villageois host
+	         			if(found==true) {
+		         			List<Villager> villagers = getVillagers(stack);
+		         			Boolean trouve = false;
+	    					for(int i=0;i<villagers.size() && trouve==false;i++) {
+	    						if(villagers.get(i).getUniqueId()==v.getUniqueId()) {
+	    							System.out.println("trouve");
+	    							if(villagers.get(i).getRecipes()!=v.getRecipes()) {
+	    								found=false;
+	    								trouve=true;
+	    								System.out.println("found false");
+	    							}
+	    						}
+	    					}
+	         			}	    				
+						*/
+	         			
 	         			if(found==false) {
 	         				invs = getSortedInventories(stack.getId(), stack, "Parcours", null, null);
-		         			HashMap<Integer,List<Inventory>> invsHashMap = new HashMap<Integer,List<Inventory>>();
-		         			invsHashMap.put(stack.getId(), invs);
-		         			parcours.put(event.getPlayer(), invsHashMap);
 	         			}
 	         			
 	         			event.getPlayer().openInventory(invs.get(0));
@@ -1071,6 +1121,27 @@ public class InteractListeners implements Listener {
         		}
             }
         }  
+    }
+    
+    public List<Villager>getVillagers(EntityStack stack){
+    	List<Villager> villagers = new ArrayList<Villager>();
+    	
+     	for(StackedEntity se : stack.stackedEntities) {
+     		if(stackedVillagers.containsKey(se.getUniqueId())) {
+     			villagers.add(stackedVillagers.get(se.getUniqueId()));
+     		}
+     	}
+     	
+     	if(stackedVillagers.containsKey(stack.getHostAsStackedEntity().getUniqueId())){
+     		villagers.add(stackedVillagers.get(stack.getHostAsStackedEntity().getUniqueId()));
+     	}
+     	
+     	if(villagers.size()==stack.getAmount()) {
+     		return villagers;
+     	}
+     	else {
+     		return null;
+     	}
     }
     
     public Inventory deleteNameTagInv(Entity e) {
@@ -1177,7 +1248,7 @@ public class InteractListeners implements Listener {
     }
     
     */
-
+    
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractAtEntityEvent event) {
         if (!(event.getRightClicked() instanceof LivingEntity)) return;
