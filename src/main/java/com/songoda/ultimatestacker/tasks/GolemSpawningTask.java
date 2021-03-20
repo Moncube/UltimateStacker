@@ -7,11 +7,14 @@ package com.songoda.ultimatestacker.tasks;
 
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_16_R3.entity.CraftAbstractVillager;
@@ -25,7 +28,9 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.BoundingBox;
 
 import com.songoda.ultimatestacker.UltimateStacker;
+import com.songoda.ultimatestacker.listeners.InteractListeners;
 import com.songoda.ultimatestacker.stackable.entity.EntityStack;
+import com.songoda.ultimatestacker.stackable.entity.StackedEntity;
 
 import io.lumine.xikage.mythicmobs.adapters.bukkit.entities.BukkitIronGolem;
 import net.minecraft.server.v1_16_R3.EntityIronGolem;
@@ -43,13 +48,13 @@ public class GolemSpawningTask extends BukkitRunnable {
     public GolemSpawningTask(UltimateStacker plugin)
     {
         this.plugin = plugin;
-        runTaskTimer(plugin, 0, 1000); //1000
+        runTaskTimer(plugin, 0, 1000);
     }
     
     @Override
     public void run()
     {
-    	System.out.println("GolemTask activée");
+    	//System.out.println("GolemTask activée");
         //World w = Bukkit.getWorld("askyblock");
     	for(World w : Bukkit.getWorlds()) {
     		
@@ -102,7 +107,7 @@ public class GolemSpawningTask extends BukkitRunnable {
     	        				}
     	        			}
     	        			
-    	        			/* ------ TEST ------- */
+    	        			/*
     	        			
     	        			if(sightPass==true) {
     	        				System.out.println("sightPass = OK");
@@ -114,27 +119,47 @@ public class GolemSpawningTask extends BukkitRunnable {
     	        				System.out.println("golemPass = OK");
     	        			}
     	        			
-    	        			/* ------------------- */
+    	        			*/
     	        			
     	        			if(sightPass==true && bedPass==true && golemPass==true) {
     	        				EntityStack stack = plugin.getEntityStackManager().getStack((LivingEntity)e);
     	        				int nb = stack.getAmount();
     	        				
+    	        				List<Villager> stackedVillagers = plugin.getInteractListeners().getVillagers(stack);
+    	        				if(stackedVillagers==null) {
+    	        					plugin.getInteractListeners().updateVillagers(stack);
+    	        					stackedVillagers = plugin.getInteractListeners().getVillagers(stack);
+    	        				}
+    	        				
     	        				List<Location> golems = new ArrayList<Location>();
     	        				
-    	        				for(int j=0;j<10;j++) {//1000
-        	        				for(int i=0;i<nb;i++) {
-        	        					Location l = trySpawningGolem(w, e);
-        	        					if(l!=null) {
-        	        						Entity e2 = w.spawnEntity(l, EntityType.IRON_GOLEM);
-        	        						e2.remove();
-        	        						golems.add(l);
-        	        					}
-        	        				}
-    	        				}
-
+    	        				List<Location> temp = new ArrayList<Location>();
     	        				
-    	        				System.out.println("golems à spawn:"+golems.size());
+
+	        					for(int i=0;i<1000;i++) {
+        	        				for(Villager villager : stackedVillagers) {
+        	        					if(villager.getRecipes()!=null) {
+			        						Location l = trySpawningGolem(w,e);
+			        						if(l!=null && !temp.contains(l)) {
+			        							Entity e2 = w.spawnEntity(l, EntityType.IRON_GOLEM);
+			        							e2.remove();
+			        							golems.add(l);
+			        							temp.add(l);
+		    	        					}
+            	        				}
+        	        					/*
+        	        					else
+        	        					{
+        	        						System.out.println("Villager invalide");
+        	        					}
+        	        					*/
+	        						}
+        	        				temp.clear();
+	        					}
+
+
+    	        				//System.out.println("golems à spawn:"+golems.size());
+    	        				
     	        				/*
     	        				for(int i=0;i<1000;i++) {
     	        					Random rnd = new Random();
@@ -207,15 +232,17 @@ public class GolemSpawningTask extends BukkitRunnable {
     		valid = false;
     	}
 
-		for(int i=0;i<3 && valid==true;i++) {
+		for(int i=0;i<2 && valid==true;i++) {
     		Location l2 = l.clone();
     		l2.add(0, i, 0);
-    		if(!l2.getBlock().isEmpty()) {
+    		if(!l2.getBlock().isEmpty()) { //&&!l2.getBlock().isLiquid()
     			valid = false;
     		}
     	}
 			
     	return valid;
     }
+    
+    
     
 }

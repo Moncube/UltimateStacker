@@ -46,29 +46,21 @@ public class RestockTask extends BukkitRunnable {
     	        			
     	        			EntityStack stack = plugin.getEntityStackManager().getStack((LivingEntity)e);
     	        			
-    	        			int nb = stack.getAmount();
-    	         			for(int i=0;i<nb;i++) {
-    	         				
-    	         				StackedEntity se = stack.getHostAsStackedEntity();
-    	         				LivingEntity le = stack.getHostEntity();    				
-    	         				Villager villager = (Villager)le;
-    	         				
-    	         				resetTrades(villager);
-    	         			
-    	        				LivingEntity entity = stack.getHostEntity();
-    	         				entity.remove();
-    	             	        LivingEntity newEntity2 = stack.takeOneAndSpawnEntitySync(entity.getLocation());
-    	             	        stack = plugin.getEntityStackManager().updateStackSync(entity, newEntity2);//
-    	             	        stack.updateStackSync();
-    	             	        stack.addEntityToStackLast(entity);
-    	        				plugin.getDataManager().createStackedEntitySync(stack,se);
+	        				List<Villager> stackedVillagers = plugin.getInteractListeners().getVillagers(stack);
+	        				if(stackedVillagers==null) {
+	        					plugin.getInteractListeners().updateVillagers(stack);
+	        					stackedVillagers = plugin.getInteractListeners().getVillagers(stack);
+	        				}
+	        				
+    	         			for(Villager v : stackedVillagers) {
+    	         				resetTrades(v);
     	         			}
     	        		}
         			}
         		}
-    		}
-		}  
-    }
+    		}  
+    	}
+	}
     
     public void resetTrades(Villager v) {
     	

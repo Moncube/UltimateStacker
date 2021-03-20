@@ -50,6 +50,8 @@ import com.songoda.ultimatestacker.utils.Methods;
 import org.apache.commons.lang.WordUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -59,6 +61,8 @@ import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -88,6 +92,7 @@ public class UltimateStacker extends SongodaPlugin {
     private StackingTask stackingTask;
     private RestockTask tradesTask;
     private GolemSpawningTask golemTask;
+    private InteractListeners interactListeners;
 
     private DatabaseConnector databaseConnector;
     private DataMigrationManager dataMigrationManager;
@@ -95,6 +100,10 @@ public class UltimateStacker extends SongodaPlugin {
 
     public static UltimateStacker getInstance() {
         return INSTANCE;
+    }
+    
+    public InteractListeners getInteractListeners() {
+    	return interactListeners;
     }
 
     @Override
@@ -126,7 +135,7 @@ public class UltimateStacker extends SongodaPlugin {
         whitelist.clear();
         whitelist.addAll(Settings.ITEM_WHITELIST.getStringList());
         blacklist.addAll(Settings.ITEM_BLACKLIST.getStringList());
-
+        
         // Setup plugin commands
         this.commandManager = new CommandManager(this);
         this.commandManager.addMainCommand("us")
@@ -183,7 +192,7 @@ public class UltimateStacker extends SongodaPlugin {
         pluginManager.registerEvents(new BlockListeners(this), this);
         pluginManager.registerEvents(new DeathListeners(this), this);
         pluginManager.registerEvents(new ShearListeners(this), this);
-        pluginManager.registerEvents(new InteractListeners(this), this);
+        pluginManager.registerEvents(interactListeners = new InteractListeners(this), this);
         if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13))
             pluginManager.registerEvents(new EntityCurrentListener(this), this);
 
@@ -281,8 +290,8 @@ public class UltimateStacker extends SongodaPlugin {
             }
         });
         
-        this.tradesTask = new RestockTask(this); // Ajout task qui gère les reset de trades
-        this.golemTask = new GolemSpawningTask(this); // Ajout task qui gère le spawn des golems
+        //this.tradesTask = new RestockTask(this); // Ajout task qui gère les reset de trades
+        //this.golemTask = new GolemSpawningTask(this); // Ajout task qui gère le spawn des golems
     }
 
     public void addExp(Player player, EntityStack stack) {
@@ -539,5 +548,5 @@ public class UltimateStacker extends SongodaPlugin {
         return !whitelist.isEmpty() && !whitelist.contains(combined)
                 || !blacklist.isEmpty() && blacklist.contains(combined);
     }
-
+   
 }

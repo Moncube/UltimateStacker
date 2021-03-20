@@ -2,6 +2,7 @@ package com.songoda.ultimatestacker.listeners;
 
 import com.songoda.core.compatibility.CompatibleMaterial;
 import com.songoda.core.compatibility.ServerVersion;
+import com.songoda.core.hooks.WorldGuardHook;
 import com.songoda.core.nms.NmsManager;
 import com.songoda.core.nms.nbt.NBTEntity;
 import com.songoda.ultimatestacker.UltimateStacker;
@@ -11,7 +12,11 @@ import com.songoda.ultimatestacker.stackable.entity.Split;
 import com.songoda.ultimatestacker.stackable.entity.StackedEntity;
 
 import net.minecraft.server.v1_16_R3.*;
+import world.bentobox.bentobox.BentoBox;
+import world.bentobox.bentobox.database.objects.Island;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,8 +25,13 @@ import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.configuration.InvalidConfigurationException;
+import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Cat;
@@ -35,6 +45,8 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityBreedEvent;
+import org.bukkit.event.entity.EntitySpawnEvent;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
@@ -45,6 +57,7 @@ import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.metadata.FixedMetadataValue;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class InteractListeners implements Listener {
 
@@ -56,10 +69,31 @@ public class InteractListeners implements Listener {
         
     private HashMap<UUID,Villager> stackedVillagers = new HashMap<UUID,Villager>();
     
+    private HashMap<Island,Integer> breedLimit = new HashMap<Island,Integer>();
+    
+    File f;
+    FileConfiguration cfg;
+    
+    public HashMap<UUID,Villager> getStackedVillagers(){
+    	return stackedVillagers;
+    }
+    
     private List<Villager> toRename = new ArrayList<>();
     
     public InteractListeners(UltimateStacker plugin) {
         this.plugin = plugin;
+        updateBreedLimit();
+        createVillagersLimitsYAML(plugin);
+    }
+    
+    public void createVillagersLimitsYAML(UltimateStacker plugin) {
+    	f = new File(plugin.getDataFolder(),"VillagersLimits.yml");
+    	cfg = YamlConfiguration.loadConfiguration(f);
+    	try {
+			cfg.save(f);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
     }
     
     @EventHandler
@@ -407,11 +441,13 @@ public class InteractListeners implements Listener {
     							event.getWhoClicked().openInventory(playerInventories.get(NMSitem.getTag().getInt("id")).get(page)); //Decalage de 1 
     						}
     						else {
-    							valid = false;
+        	    				event.getWhoClicked().openInventory(getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event), 
+        	    						"Parcours", null, null).get(page));
     						}
     					}
     					else {
-    	    				valid = false;
+    	    				event.getWhoClicked().openInventory(getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event), 
+    	    						"Parcours", null, null).get(page));
     					}
     					
     					if(valid==false) {
@@ -444,11 +480,13 @@ public class InteractListeners implements Listener {
     							event.getWhoClicked().openInventory(playerInventories.get(NMSitem.getTag().getInt("id")).get(page-2)); //Decalage de 1
     						}
     						else {
-    							valid = false;
+        	    				event.getWhoClicked().openInventory(getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event), 
+        	    						"Parcours", null, null).get(page-2));
     						}
     					}
     					else {
-    	    				valid = false;
+    	    				event.getWhoClicked().openInventory(getSortedInventories(NMSitem.getTag().getInt("id"), getStack(event), 
+    	    						"Parcours", null, null).get(page-2));
     					}
     					
     					if(valid==false) {
@@ -573,6 +611,8 @@ public class InteractListeners implements Listener {
     			}
     		}
     	}	
+    	
+    	//plugin.getEntityStackManager().getStack();
     	
     	return stack;
     }
@@ -722,8 +762,12 @@ public class InteractListeners implements Listener {
 			}
 			else {
 				
-				villageois.add((Villager)stack.getHostEntity());
+				Villager villager = (Villager)stack.getHostEntity();
+				villageois.add(villager);
 				
+				//Maj du host car trades pouvant changer
+				stackedVillagers.put(stack.getHostAsStackedEntity().getUniqueId(), villager);
+			
 				for(Villager v : villagers) {
 					if(!(v.getUniqueId().equals(((Villager)stack.getHostEntity()).getUniqueId()))) {
 						villageois.add(v);
@@ -773,7 +817,6 @@ public class InteractListeners implements Listener {
 	    		else {
 	    			double temp = (int)i/36;
 		    		if(p!=temp+1 || i==0) {	
-		    			
 		    			if(i!=0) {
 	                    	ItemStack next = new ItemStack(Material.ARROW);
 	                    	ItemMeta imNext = next.getItemMeta();
@@ -793,8 +836,8 @@ public class InteractListeners implements Listener {
 		    			}
 				    	inv = Bukkit.createInventory(null,54,"§aInterface PNJs "+p);
 				    	
-				    	for(int i2=0;i2<54;i2+=1)
-		                {
+				    	for(int i2=0;i2<54;i2+=1) {
+				    		
 		                    if(i2<=8 || i2>=45) {
 		                		inv.setItem(i2,glass);                        	                    
 		                    }
@@ -1059,7 +1102,7 @@ public class InteractListeners implements Listener {
 
 	        		if (!plugin.getEntityStackManager().isStackedAndLoaded(entity)) {
 	        			
-	    				if(entity.getCustomName()!=null) {
+	    				if(entity.getCustomName()!=null && entity.getCustomName().equals("Villageois")) {
 	    					if(entity.hasAI()) { //Empêche que l'event se produise sur des shopkeepers
 	        					event.getPlayer().openInventory(deleteNameTagInv(event.getRightClicked()));
 	        					toRename.add((Villager)entity);
@@ -1072,10 +1115,10 @@ public class InteractListeners implements Listener {
 	        		else
 	        		{
 	            		Villager v = (Villager)entity;
-	            		event.getPlayer().sendMessage(""+v.getRestocksToday());
+	            		//event.getPlayer().sendMessage(""+v.getRestocksToday());
 
 	            		World w = event.getPlayer().getWorld();
-	            		event.getPlayer().sendMessage("getTime : "+w.getTime());
+	            		//event.getPlayer().sendMessage("getTime : "+w.getTime());
 	                 	
 	                 	EntityStack stack = plugin.getEntityStackManager().getStack(entity);
 	                 	
@@ -1248,6 +1291,160 @@ public class InteractListeners implements Listener {
     }
     
     */
+    
+    public void updateVillagers(EntityStack stack) {
+
+		int nb = stack.getAmount();
+		for(int i=0;i<nb;i++) {
+			
+			StackedEntity se = stack.getHostAsStackedEntity();
+			LivingEntity le = stack.getHostEntity();
+			
+			Villager villager = (Villager)le;
+
+			if(!(stackedVillagers.containsKey(se.getUniqueId()))) {
+				stackedVillagers.put(se.getUniqueId(),villager);
+			}
+		
+			LivingEntity entity = stack.getHostEntity();
+			entity.remove();
+ 	        LivingEntity newEntity2 = stack.takeOneAndSpawnEntitySync(entity.getLocation());
+ 	        stack = plugin.getEntityStackManager().updateStackSync(entity, newEntity2);
+ 	        stack.updateStackSync();
+ 	        stack.addEntityToStackLast(entity);
+			plugin.getDataManager().createStackedEntitySync(stack,se);
+		}
+    }
+    
+    @EventHandler
+    public void onBreed(EntityBreedEvent event) {
+    	if(event.getMother() instanceof Villager || event.getFather() instanceof Villager) {
+    		EntityStack stack = null;
+    		LivingEntity e = null;
+    		
+    		if(plugin.getEntityStackManager().isStackedAndLoaded(event.getMother())) {
+    			stack = plugin.getEntityStackManager().getStack(event.getMother());
+    			e = stack.getHostEntity();
+    		}
+    		else
+    		{
+    			if(plugin.getEntityStackManager().isStackedAndLoaded(event.getFather())) {
+    				stack = plugin.getEntityStackManager().getStack(event.getFather());
+    				e = stack.getHostEntity();
+    			}
+    		}
+    		
+    		if(stack!=null) {
+    			Boolean pass = false;
+    			int limit = 0;
+    			
+    			if(Bukkit.getPluginManager().isPluginEnabled("BentoBox")) {
+    				
+    	       		Island island = BentoBox.getInstance().getIslands().getIslandAt(e.getLocation()).orElse(null);
+            		if(island!=null) {
+            			if(breedLimit.containsKey(island)){
+            				limit = breedLimit.get(island);
+            				if(limit<5) {			
+            					pass = true;
+            				}
+            			}
+            			else {
+            				pass = true;
+            			}
+            		}
+            		
+            		if(pass==true) {
+            			
+            			int toAdd = 0;
+            			while(limit<5 && stack.stackedEntities.size() - toAdd > 0) {
+            				
+            				toAdd+=1;
+            				Entity entity = Bukkit.getWorld("bskyblock_world").spawnEntity(e.getLocation(), EntityType.VILLAGER);
+            				((Villager)entity).setBaby();
+            			}
+            			
+            			breedLimit.put(island, limit+toAdd);
+            			
+            		}
+    			}
+    			else
+    			{
+    				System.out.println("[UltimateStacker] §4Impossible d'établir la dépendance avec le plugin BentoBox");
+    			}
+    		}
+    	}
+    }
+    
+    public void updateBreedLimit() {
+    	new BukkitRunnable() {
+			
+			@Override
+			public void run() {
+				breedLimit.clear();
+			}
+			
+		}.runTaskLater(plugin, 22000); //Marge de 2000 ticks
+    }
+    
+    
+    @EventHandler
+    public void onVillagerSpawn(EntitySpawnEvent event) {
+    	if(event.getLocation().getWorld().getName().equals("bskyblock_world")) {
+    		Island spawnIsland = BentoBox.getInstance().getIslands().getIslandAt(event.getLocation()).orElse(null);
+			if ( spawnIsland != null ) {
+				if(event.getEntityType()==EntityType.VILLAGER) {
+					
+					Boolean villagerFlag = WorldGuardHook.isEnabled() ? WorldGuardHook.getBooleanFlag(event.getLocation(), "villager-stacking") : null;
+					
+					int villagers = event.getLocation().getWorld().getEntitiesByClasses(event.getEntityType().getEntityClass()).stream()
+							.filter(e -> e instanceof Villager)
+							.filter(e -> isOnIsland(spawnIsland, e) && ((Villager)event.getEntity()).hasAI())
+							.mapToInt(e-> 1).sum();
+				
+					String msg = "";
+					
+					if(villagerFlag==true) {
+						
+						int stackedVillagers = event.getLocation().getWorld().getEntitiesByClasses(event.getEntityType().getEntityClass()).stream()
+								.filter(e -> e instanceof Villager)
+								.filter(e -> isOnIsland(spawnIsland, e) && ((Villager)event.getEntity()).hasAI())
+								.filter(e -> plugin.getEntityStackManager().isStackedAndLoaded((LivingEntity)e))
+								.mapToInt(e -> plugin.getEntityStackManager().getStack((LivingEntity)e).getAmount()).sum();
+						
+						if(villagers >= cfg.getInt("villagers")) {
+							msg = (ChatColor.RED+"Vous ne pouvez pas dépasser la limite de "+ cfg.getInt("villagers")+" villageois déstackés !");
+						}
+						
+						if(stackedVillagers >= cfg.getInt("stackedVillagers")) {
+							msg = (ChatColor.RED+"Vous ne pouvez pas dépasser la limite de "+cfg.getInt("stackedVillagers")+" villageois !");
+						}
+					}
+					else {
+						if(villagers >= cfg.getInt("oldVillagers")) {
+							msg = (ChatColor.RED+"Vous ne pouvez pas dépasser la limite de "+ cfg.getInt("oldVillagers")+" villageois !");
+						}
+					}
+
+					if(msg!="") {
+						event.setCancelled(true);
+						for ( Entity entity : event.getLocation().getNearbyEntities(4, 4, 4) ) {
+							if ( entity.getType() == EntityType.PLAYER ) {			
+								((Player) entity).sendMessage(msg);
+							}	
+						}
+					}
+				}
+			}
+    	}
+    }
+    
+    
+	private boolean isOnIsland(Island island, Entity entity) {
+		return entity.getLocation().getX() >= island.getMinProtectedX() && entity.getLocation().getX() <= island.getMaxProtectedX() && 
+				entity.getLocation().getZ() >= island.getMinProtectedZ() && entity.getLocation().getZ() <= island.getMaxProtectedZ(); 
+	}
+    
+
     
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onInteract(PlayerInteractAtEntityEvent event) {

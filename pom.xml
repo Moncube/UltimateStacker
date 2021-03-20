@@ -172,5 +172,11 @@
             <artifactId>MythicMobs</artifactId>
             <version>4.10.1</version>
         </dependency>
+       	<dependency>
+		    <groupId>world.bentobox</groupId>
+		    <artifactId>bentobox</artifactId>
+		    <version>1.15.5</version>
+		    <scope>provided</scope>
+	  </dependency>
     </dependencies>
 </project>
