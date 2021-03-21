@@ -3,6 +3,7 @@ package com.songoda.ultimatestacker.listeners;
 import com.songoda.ultimatestacker.stackable.entity.EntityStackManager;
 import org.bukkit.Chunk;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -23,7 +24,9 @@ public class ChunkListeners implements Listener {
         for (Entity entity : chunk.getEntities()) {
             if (!(entity instanceof LivingEntity)) continue;
             if (entityStackManager.isEntityInColdStorage((LivingEntity) entity)) {
-                entityStackManager.loadStack((LivingEntity) entity);
+            	//if(entity.getType() != EntityType.VILLAGER) {
+            		entityStackManager.loadStack((LivingEntity) entity);
+            	//}
             }
         }
     }
@@ -34,7 +37,9 @@ public class ChunkListeners implements Listener {
         for (Entity entity : chunk.getEntities()) {
             if (!(entity instanceof LivingEntity)) continue;
             if (entityStackManager.isStackedAndLoaded((LivingEntity) entity)) {
-                entityStackManager.unloadStack((LivingEntity) entity);
+            	if(entity.getType() != EntityType.VILLAGER) {
+            		entityStackManager.unloadStack((LivingEntity) entity);
+            	}
             }
         }
     }

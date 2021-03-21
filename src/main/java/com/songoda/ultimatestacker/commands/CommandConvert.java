@@ -4,10 +4,10 @@ import com.songoda.core.commands.AbstractCommand;
 import com.songoda.core.gui.GuiManager;
 import com.songoda.core.utils.TextUtils;
 import com.songoda.ultimatestacker.gui.GUIConvert;
-import com.songoda.ultimatestacker.utils.Methods;
 import org.bukkit.Bukkit;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitWorker;
 
 import java.util.List;
 
@@ -29,6 +29,9 @@ public class CommandConvert extends AbstractCommand {
             sender.sendMessage(TextUtils.formatText("&cYou need to have the plugin &4WildStacker &cor &4StackMob &cenabled " +
                     "in order to convert data."));
         }
+        
+        List<BukkitWorker> workers = Bukkit.getScheduler().getActiveWorkers();
+        sender.sendMessage("§4 Nombre de threads Async :"+workers.size());
         return ReturnType.SUCCESS;
     }
 

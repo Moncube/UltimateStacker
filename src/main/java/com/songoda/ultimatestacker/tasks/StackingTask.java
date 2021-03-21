@@ -167,6 +167,14 @@ public class StackingTask extends BukkitRunnable {
 
         // The amount that is stackable.
         int amountToStack = isStack ? stack.getAmount() : 1;
+        
+        //Beta addon villageois stackés sur le skyblock
+        if(livingEntity.getType()==EntityType.VILLAGER) {
+        	Boolean villagerFlag = WorldGuardHook.isEnabled() ? WorldGuardHook.getBooleanFlag(livingEntity.getLocation(), "villager-stacking") : null;
+        	if(villagerFlag == null || !villagerFlag) {
+        		return;
+        	}
+        }
 
         // Attempt to split our stack. If the split is successful then skip this entity.
         if (isStack && attemptSplit(stack, livingEntity)) return;

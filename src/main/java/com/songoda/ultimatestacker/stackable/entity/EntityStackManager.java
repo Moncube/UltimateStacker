@@ -142,6 +142,8 @@ public class EntityStackManager {
         ColdEntityStack coldStack = coldStacks.get(entity.getUniqueId());
         if (coldStack == null) return;
         EntityStack stack = new EntityStack(entity, coldStack);
+        if(stack !=null && coldStack != null) {
+        }
         stack.updateStack();
         stacks.put(entity.getUniqueId(), stack);
     }

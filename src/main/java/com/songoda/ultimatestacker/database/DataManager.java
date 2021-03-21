@@ -108,6 +108,7 @@ public class DataManager extends DataManagerAbstract {
 
 
     public void createHostEntity(ColdEntityStack stack) {
+    	/*
         this.queueAsync(() -> this.databaseConnector.connect(connection -> {
             if (stack == null || stack.getHostUniqueId() == null) return;
             String createSerializedEntity = "INSERT INTO " + this.getTablePrefix() + "host_entities (uuid, create_duplicates) VALUES (?, ?)";
@@ -119,11 +120,13 @@ public class DataManager extends DataManagerAbstract {
             int stackId = this.lastInsertedId(connection, "host_entities");
             this.sync(() -> stack.setId(stackId));
         }), "create");
+        */
+    	
     }
 
     public void createStackedEntity(EntityStack hostStack, StackedEntity stackedEntity) {
-    	//if ( hostStack.getHostEntity() != null )
-    		//System.out.println("[UltimateStacker] createStackedEntity at location: "+hostStack.getHostEntity().getLocation());
+    	/*
+>>>>>>> refs/remotes/origin/Aeliios
         this.queueAsync(() -> this.databaseConnector.connect(connection -> {
             String createSerializedEntity = "INSERT INTO " + this.getTablePrefix() + "stacked_entities (uuid, host, serialized_entity) VALUES (?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(createSerializedEntity)) {
@@ -134,6 +137,7 @@ public class DataManager extends DataManagerAbstract {
                 statement.executeUpdate();
             }
         }), "create");
+        */
     }
     
     public void createStackedEntitySync(EntityStack hostStack, StackedEntity stackedEntity) {
@@ -150,8 +154,8 @@ public class DataManager extends DataManagerAbstract {
     }
 
     public void createStackedEntities(ColdEntityStack hostStack, List<StackedEntity> stackedEntities) {
-    	//if ( hostStack.getHostUniqueId() != null && Bukkit.getEntity(hostStack.getHostUniqueId()) != null )
-    		//System.out.println("[UltimateStacker] createStackedEntities at location: "+ Bukkit.getEntity(hostStack.getHostUniqueId()).getLocation());
+    	/*
+>>>>>>> refs/remotes/origin/Aeliios
         this.queueAsync(() -> this.databaseConnector.connect(connection -> {
             String createSerializedEntity = "REPLACE INTO " + this.getTablePrefix() + "stacked_entities (uuid, host, serialized_entity) VALUES (?, ?, ?)";
             try (PreparedStatement statement = connection.prepareStatement(createSerializedEntity)) {
@@ -165,6 +169,7 @@ public class DataManager extends DataManagerAbstract {
                 statement.executeBatch();
             }
         }), "create");
+        */
     }
     
     public void createStackedEntitiesSync(ColdEntityStack hostStack, List<StackedEntity> stackedEntities) {
@@ -184,8 +189,8 @@ public class DataManager extends DataManagerAbstract {
     }
 
     public void updateHost(ColdEntityStack hostStack) {
-    	//if ( hostStack.getHostUniqueId() != null && Bukkit.getEntity(hostStack.getHostUniqueId()) != null )
-    		//System.out.println("[UltimateStacker] updateHost at location: "+ Bukkit.getEntity(hostStack.getHostUniqueId()).getLocation());
+    	/*
+>>>>>>> refs/remotes/origin/Aeliios
         this.async(() -> this.databaseConnector.connect(connection -> {
             String updateHost = "UPDATE " + this.getTablePrefix() + "host_entities SET uuid = ?, create_duplicates = ? WHERE id = ?";
             try (PreparedStatement statement = connection.prepareStatement(updateHost)) {
@@ -196,6 +201,7 @@ public class DataManager extends DataManagerAbstract {
                 statement.executeUpdate();
             }
         }));
+        */
     }
     
     public void updateHostSync(ColdEntityStack hostStack) {
@@ -212,8 +218,8 @@ public class DataManager extends DataManagerAbstract {
     }
 
     public void deleteHost(ColdEntityStack stack) {
-    	//if ( stack.getHostUniqueId() != null && Bukkit.getEntity(stack.getHostUniqueId()) != null )
-    		//System.out.println("[UltimateStacker] deleteHost at location: "+ Bukkit.getEntity(stack.getHostUniqueId()).getLocation());
+    	/*
+>>>>>>> refs/remotes/origin/Aeliios
         this.async(() -> this.databaseConnector.connect(connection -> {
             String deleteHost = "DELETE FROM " + this.getTablePrefix() + "host_entities WHERE id = ?";
             try (PreparedStatement statement = connection.prepareStatement(deleteHost)) {
@@ -227,11 +233,12 @@ public class DataManager extends DataManagerAbstract {
                 statement.executeUpdate();
             }
         }));
+        */
     }
 
     public void deleteStackedEntity(UUID uuid) {
-    	//if ( uuid != null && Bukkit.getEntity(uuid) != null )
-    	//	System.out.println("[UltimateStacker] deleteStackedEntity at location: "+ Bukkit.getEntity(uuid).getLocation());
+    	/*
+>>>>>>> refs/remotes/origin/Aeliios
         this.async(() -> this.databaseConnector.connect(connection -> {
             String deleteStackedEntity = "DELETE FROM " + this.getTablePrefix() + "stacked_entities WHERE uuid = ?";
             try (PreparedStatement statement = connection.prepareStatement(deleteStackedEntity)) {
@@ -239,6 +246,7 @@ public class DataManager extends DataManagerAbstract {
                 statement.executeUpdate();
             }
         }));
+        */
     }
     
     public void deleteStackedEntitySync(UUID uuid) {
@@ -252,8 +260,8 @@ public class DataManager extends DataManagerAbstract {
     }
     
     public void deleteStackedEntities(List<StackedEntity> entities) {
-    	//if ( !entities.isEmpty() && entities.get(0).getUniqueId() != null && Bukkit.getEntity(entities.get(0).getUniqueId()) != null )
-    		//System.out.println("[UltimateStacker] deleteStackedEntities at location: "+ Bukkit.getEntity(entities.get(0).getUniqueId()).getLocation());
+    	/*
+>>>>>>> refs/remotes/origin/Aeliios
         this.async(() -> this.databaseConnector.connect(connection -> {
             String deleteStackedEntities = "DELETE FROM " + this.getTablePrefix() + "stacked_entities WHERE uuid = ?";
             try (PreparedStatement statement = connection.prepareStatement(deleteStackedEntities)) {
@@ -265,6 +273,7 @@ public class DataManager extends DataManagerAbstract {
                 statement.executeBatch();
             }
         }));
+        */
     }
 
     public void deleteSpawner(SpawnerStack spawnerStack) {

@@ -1,5 +1,7 @@
 package com.songoda.ultimatestacker;
 
+import com.songoda.ultimatestacker.tasks.GolemSpawningTask;
+import com.songoda.ultimatestacker.tasks.RestockTask;
 import com.songoda.core.SongodaCore;
 import com.songoda.core.SongodaPlugin;
 import com.songoda.core.commands.CommandManager;
@@ -53,13 +55,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.Villager;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.plugin.PluginManager;
@@ -73,7 +73,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.UUID;
 
 public class UltimateStacker extends SongodaPlugin {
 
@@ -94,6 +93,9 @@ public class UltimateStacker extends SongodaPlugin {
     private CommandManager commandManager;
     private CustomEntityManager customEntityManager;
     private StackingTask stackingTask;
+    private RestockTask tradesTask;
+    private GolemSpawningTask golemTask;
+    private InteractListeners interactListeners;
 
     private DatabaseConnector databaseConnector;
     private DataMigrationManager dataMigrationManager;
@@ -108,6 +110,10 @@ public class UltimateStacker extends SongodaPlugin {
     public static UltimateStacker getInstance() {
         return INSTANCE;
     }
+    
+    public InteractListeners getInteractListeners() {
+    	return interactListeners;
+    }
 
     @Override
     public void onPluginLoad() {
@@ -116,6 +122,8 @@ public class UltimateStacker extends SongodaPlugin {
         // Register WorldGuard
         WorldGuardHook.addHook("mob-stacking", true);
         
+        // Ajout d'un hook villageois pour la béta de l'addon villager pour le sky
+        WorldGuardHook.addHook("villager-stacking", false);
     }
 
     @Override
@@ -154,7 +162,7 @@ public class UltimateStacker extends SongodaPlugin {
         whitelist.clear();
         whitelist.addAll(Settings.ITEM_WHITELIST.getStringList());
         blacklist.addAll(Settings.ITEM_BLACKLIST.getStringList());
-
+        
         // Setup plugin commands
         this.commandManager = new CommandManager(this);
         this.commandManager.addMainCommand("us")
@@ -211,7 +219,7 @@ public class UltimateStacker extends SongodaPlugin {
         pluginManager.registerEvents(new BlockListeners(this), this);
         pluginManager.registerEvents(new DeathListeners(this), this);
         pluginManager.registerEvents(new ShearListeners(this), this);
-        pluginManager.registerEvents(new InteractListeners(this), this);
+        pluginManager.registerEvents(interactListeners = new InteractListeners(this), this);
         if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13))
             pluginManager.registerEvents(new EntityCurrentListener(this), this);
 
@@ -228,7 +236,9 @@ public class UltimateStacker extends SongodaPlugin {
         pluginManager.registerEvents(new SheepDyeListeners(this), this);
 
         if (Settings.CLEAR_LAG.getBoolean() && pluginManager.isPluginEnabled("ClearLag"))
-            pluginManager.registerEvents(new ClearLagListeners(this), this);
+        	 pluginManager.registerEvents(new ClearLagListeners(this), this);
+
+           
 
         // Register Hooks
         if (pluginManager.isPluginEnabled("Jobs"))
@@ -263,9 +273,7 @@ public class UltimateStacker extends SongodaPlugin {
                 new _2_EntityStacks(),
                 new _3_BlockStacks());
         this.dataMigrationManager.runMigrations();
-        
-        
-        
+
         //PapiCapi
         startSpawnerAndFarmsActivity();
         
@@ -385,6 +393,7 @@ public class UltimateStacker extends SongodaPlugin {
             this.stackingTask = new StackingTask(this);
             getServer().getPluginManager().registerEvents(new ChunkListeners(entityStackManager), this);
         });
+    
         final boolean useBlockHolo = Settings.BLOCK_HOLOGRAMS.getBoolean();
         this.dataManager.getBlocks((blocks) -> {
             this.blockStackManager.addBlocks(blocks);
@@ -398,6 +407,9 @@ public class UltimateStacker extends SongodaPlugin {
                 }
             }
         });
+        
+        //this.tradesTask = new RestockTask(this); // Ajout task qui gère les reset de trades
+        //this.golemTask = new GolemSpawningTask(this); // Ajout task qui gère le spawn des golems
     }
 
     public void addExp(Player player, EntityStack stack) {
@@ -458,6 +470,14 @@ public class UltimateStacker extends SongodaPlugin {
     public void setStackingTask(StackingTask stackingTask) {
 		this.stackingTask = stackingTask;
 	}
+    
+    public RestockTask getTradesTask() {
+    	return tradesTask;
+    }
+    
+    public GolemSpawningTask getGolemTask() {
+    	return golemTask;
+    }
 
     public Config getMobFile() {
         return mobFile;
@@ -650,5 +670,5 @@ public class UltimateStacker extends SongodaPlugin {
         return !whitelist.isEmpty() && !whitelist.contains(combined)
                 || !blacklist.isEmpty() && blacklist.contains(combined);
     }
-
+   
 }
