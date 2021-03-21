@@ -1,5 +1,6 @@
 package com.songoda.ultimatestacker.stackable.entity;
 
+import com.songoda.core.compatibility.ServerVersion;
 import com.songoda.lootables.loot.Drop;
 import com.songoda.lootables.loot.DropUtils;
 import com.songoda.ultimatestacker.UltimateStacker;
@@ -136,7 +137,7 @@ public class EntityStack extends ColdEntityStack {
         plugin.addExp(killed.getKiller(), this);
     }
 
-    private void handleSingleStackDeath(LivingEntity killed, List<Drop> drops, EntityDeathEvent event) {
+    private void handleSingleStackDeath(LivingEntity killed, List<Drop> drops, int droppedExp, EntityDeathEvent event) {
         EntityStackManager stackManager = plugin.getEntityStackManager();
 
         killed.remove();
@@ -144,6 +145,13 @@ public class EntityStack extends ColdEntityStack {
 
         //if (!EntityUtils.isAware(killed))
         //    EntityUtils.setUnaware(newEntity);
+
+        // In versions 1.14 and below experience is not dropping. Because of this we are doing this ourselves.
+        if (ServerVersion.isServerVersionAtOrBelow(ServerVersion.V1_14)) {
+            Location killedLocation = killed.getLocation();
+            if (droppedExp > 0)
+                killedLocation.getWorld().spawn(killedLocation, ExperienceOrb.class).setExperience(droppedExp);
+        }
 
         DropUtils.processStackedDrop(killed, drops, event);
 
@@ -177,7 +185,7 @@ public class EntityStack extends ColdEntityStack {
                     return;
                 }
             }
-            handleSingleStackDeath(killed, drops, event);
+            handleSingleStackDeath(killed, drops, droppedExp, event);
         }
     }
 

@@ -31,10 +31,10 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
@@ -97,7 +97,11 @@ public class EntityListeners implements Listener {
         }
     }
 
-
+    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    public void onSpawn(CreatureSpawnEvent event) {
+        event.getEntity().setMetadata("US_REASON", new FixedMetadataValue(plugin, event.getSpawnReason().name()));
+    }
+    
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onBlow(EntityExplodeEvent event) {
         if (!plugin.spawnersEnabled()) return;
@@ -152,7 +156,7 @@ public class EntityListeners implements Listener {
     }
     
     @EventHandler
-    public void onSpawn(CreatureSpawnEvent event) {
+    public void onMobSpawn(CreatureSpawnEvent event) {
     	if ( (event.getSpawnReason() == SpawnReason.NATURAL || event.getSpawnReason() == SpawnReason.NETHER_PORTAL) &&
     			Settings.STACK_ENTITIES.getBoolean() &&
         		event.getLocation().getWorld().getName().equals("askyblock") &&

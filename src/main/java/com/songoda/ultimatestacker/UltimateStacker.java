@@ -174,7 +174,7 @@ public class UltimateStacker extends SongodaPlugin {
         for (EntityType value : EntityType.values()) {
             if (value.isSpawnable() && value.isAlive() && !value.toString().contains("ARMOR")) {
                 mobFile.addDefault("Mobs." + value.name() + ".Enabled", true);
-                mobFile.addDefault("Mobs." + value.name() + ".Display Name", Methods.formatText(value.name().toLowerCase().replace("_", " "), true));
+                mobFile.addDefault("Mobs." + value.name() + ".Display Name", TextUtils.formatText(value.name().toLowerCase().replace("_", " "), true));
                 mobFile.addDefault("Mobs." + value.name() + ".Max Stack Size", -1);
                 mobFile.addDefault("Mobs." + value.name() + ".Kill Whole Stack", false);
             }
@@ -193,7 +193,7 @@ public class UltimateStacker extends SongodaPlugin {
         for (EntityType value : EntityType.values()) {
             if (value.isSpawnable() && value.isAlive() && !value.toString().contains("ARMOR")) {
                 spawnerFile.addDefault("Spawners." + value.name() + ".Max Stack Size", -1);
-                spawnerFile.addDefault("Spawners." + value.name() + ".Display Name", Methods.formatText(value.name().toLowerCase().replace("_", " "), true));
+                spawnerFile.addDefault("Spawners." + value.name() + ".Display Name", TextUtils.formatText(value.name().toLowerCase().replace("_", " "), true));
             }
         }
         spawnerFile.load();
@@ -231,9 +231,9 @@ public class UltimateStacker extends SongodaPlugin {
             pluginManager.registerEvents(new ClearLagListeners(this), this);
 
         // Register Hooks
-        if (pluginManager.isPluginEnabled("Jobs")) {
+        if (pluginManager.isPluginEnabled("Jobs"))
             stackerHooks.add(new JobsHook());
-        }
+
         HologramManager.load(this);
 
         // Database stuff, go!
