@@ -36,16 +36,19 @@ public class StackingTask extends BukkitRunnable {
 
     private final EntityStackManager stackManager;
 
-    private final ConfigurationSection configurationSection = UltimateStacker.getInstance().getMobFile();
+    private final static ConfigurationSection configurationSection = UltimateStacker.getInstance().getMobFile();
     private final List<UUID> processed = new ArrayList<>();
 
     private final Map<CachedChunk, Entity[]> cachedChunks = new HashMap<>();
 
-    private final HashMap<EntityType, Integer> entityStackSizes = new HashMap();
-    private final int maxEntityStackSize = Settings.MAX_STACK_ENTITIES.getInt(),
-            minEntityStackSize = Settings.MIN_STACK_ENTITIES.getInt(),
-            searchRadius = Settings.SEARCH_RADIUS.getInt(),
-            maxPerTypeStacksPerChunk = Settings.MAX_PER_TYPE_STACKS_PER_CHUNK.getInt();
+    private final static HashMap<EntityType, Integer> entityStackSizes = new HashMap();
+    private final static int maxEntityStackSize = Settings.MAX_STACK_ENTITIES.getInt();
+
+	private final int minEntityStackSize = Settings.MIN_STACK_ENTITIES.getInt();
+
+	private final int searchRadius = Settings.SEARCH_RADIUS.getInt();
+
+	private final int maxPerTypeStacksPerChunk = Settings.MAX_PER_TYPE_STACKS_PER_CHUNK.getInt();
     private final List<String> disabledWorlds = Settings.DISABLED_WORLDS.getStringList(),
             stackReasons = Settings.STACK_REASONS.getStringList();
     private final List<Check> checks = Check.getChecks(Settings.STACK_CHECKS.getStringList());
@@ -671,7 +674,7 @@ public class StackingTask extends BukkitRunnable {
                 || (equipment.getBoots() != null && equipment.getBoots().getType() != Material.AIR));
     }
 
-    private int getEntityStackSize(LivingEntity initialEntity) {
+    public static int getEntityStackSize(LivingEntity initialEntity) {
         Integer max = entityStackSizes.get(initialEntity.getType());
         if (max == null) {
             max = configurationSection.getInt("Mobs." + initialEntity.getType().name() + ".Max Stack Size");

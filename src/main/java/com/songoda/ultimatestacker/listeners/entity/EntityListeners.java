@@ -7,6 +7,12 @@ import com.songoda.ultimatestacker.stackable.entity.EntityStack;
 import com.songoda.ultimatestacker.stackable.entity.EntityStackManager;
 import com.songoda.ultimatestacker.stackable.spawner.SpawnerStack;
 import com.songoda.ultimatestacker.utils.Methods;
+import com.songoda.ultimatestacker.utils.Paire;
+
+import world.bentobox.bentobox.BentoBox;
+import world.bentobox.bentobox.api.flags.Flag;
+import world.bentobox.bentobox.database.objects.Island;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -22,10 +28,12 @@ import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.EntityTransformEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
@@ -141,6 +149,62 @@ public class EntityListeners implements Listener {
         for (Block block : toCancel) {
             event.blockList().remove(block);
         }
+    }
+    
+    @EventHandler
+    public void onSpawn(CreatureSpawnEvent event) {
+    	if ( (event.getSpawnReason() == SpawnReason.NATURAL || event.getSpawnReason() == SpawnReason.NETHER_PORTAL) &&
+    			Settings.STACK_ENTITIES.getBoolean() &&
+        		event.getLocation().getWorld().getName().equals("askyblock") &&
+        		UltimateStacker.getInstance().getMobFile().getBoolean("Mobs." + event.getEntityType().name() + ".Enabled")) {
+    		
+    		
+    		Island spawnIsland = BentoBox.getInstance().getIslands().getIslandAt(event.getLocation()).orElse(null);
+    		Flag flag = BentoBox.getInstance().getFlagsManager().getFlag("MONSTER_NATURAL_SPAWN").orElse(null);
+    		if ( spawnIsland != null && flag != null && spawnIsland.getFlag(flag) > 0 ) {
+    			
+    			event.setCancelled(true);
+            	if ( event.getEntity() instanceof LivingEntity ) {
+            		
+            		int amountAlreadySeen = 0;
+            		Paire<EntityType, Location> paire;
+            		
+                    if ( getPaireOfLocation(event.getLocation(), event.getEntityType()) != null ) {
+                    	paire = getPaireOfLocation(event.getLocation(), event.getEntityType());
+                    	amountAlreadySeen = UltimateStacker.waitingToSpawnFromFarms.get(paire);
+                    	
+                    	
+                    	//add to the ignored Locations
+                    	List<Location> ignoredLocations;
+                    	if ( UltimateStacker.ignoredLocations.get(paire.getSecondElement()) != null ) { //map already contains an initialized list of ignored locations
+                    		ignoredLocations = UltimateStacker.ignoredLocations.get(paire.getSecondElement());
+                    	} else {
+                    		ignoredLocations = new ArrayList<>();
+                    	}
+                    	ignoredLocations.add(event.getLocation());
+                    	
+                    	UltimateStacker.ignoredLocations.put(paire.getSecondElement(), ignoredLocations);
+                    }
+                    else
+                    	paire = new Paire<>(event.getEntityType(), event.getLocation());
+                    
+                    
+                    amountAlreadySeen++;
+                   	UltimateStacker.waitingToSpawnFromFarms.put(paire, amountAlreadySeen);
+            	}
+    			
+    		}
+        		
+    		
+    	}
+    }
+    
+    /*
+     * returns the first Paire where the distance is less than 7
+     */
+    private Paire<EntityType, Location> getPaireOfLocation(Location loc, EntityType type) {
+    	return UltimateStacker.waitingToSpawnFromFarms.keySet().stream().filter(paire -> paire.getSecondElement().distance(loc) < 50 && paire.getFirstElement() == type).findFirst().orElse(null);
+
     }
 
 }

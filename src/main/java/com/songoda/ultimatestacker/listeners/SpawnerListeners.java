@@ -4,12 +4,14 @@ import com.songoda.core.compatibility.ServerVersion;
 import com.songoda.core.nms.NmsManager;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
-import com.songoda.ultimatestacker.stackable.entity.EntityStack;
 import com.songoda.ultimatestacker.stackable.spawner.SpawnerStack;
 import com.songoda.ultimatestacker.stackable.spawner.SpawnerStackManager;
 import com.songoda.ultimatestacker.utils.Methods;
+import com.songoda.ultimatestacker.utils.Paire;
 import com.songoda.ultimatestacker.utils.ReflectionUtil;
+
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.CreatureSpawner;
@@ -34,7 +36,7 @@ public class SpawnerListeners implements Listener {
 
     @EventHandler
     public void onSpawn(SpawnerSpawnEvent event) {
-        if (!Settings.STACK_ENTITIES.getBoolean()
+        /*if (!Settings.STACK_ENTITIES.getBoolean()
                 || !plugin.spawnersEnabled()
                 || plugin.getStackingTask().isWorldDisabled(event.getLocation().getWorld())) return;
         SpawnerStackManager spawnerStackManager = plugin.getSpawnerStackManager();
@@ -48,7 +50,23 @@ public class SpawnerListeners implements Listener {
         stack.createDuplicates(spawnerStack.calculateSpawnCount());
         stack.updateStack();
 
-        plugin.getStackingTask().attemptSplit(stack, (LivingEntity) event.getEntity());
+        plugin.getStackingTask().attemptSplit(stack, (LivingEntity) event.getEntity());*/
+    	
+    	if ( Settings.STACK_ENTITIES.getBoolean() &&
+    			event.getLocation().getWorld().getName().equals("askyblock") &&
+    			UltimateStacker.getInstance().getMobFile().getBoolean("Mobs." + event.getEntityType().name() + ".Enabled")) {
+    		
+    		event.setCancelled(true);
+        	if ( event.getEntity() instanceof LivingEntity ) {
+        		Paire<Integer, Location> paire = new Paire<>(0, event.getLocation());
+                if ( UltimateStacker.waitingToSpawnFromSpawner.containsKey(event.getSpawner()) )
+                	paire = UltimateStacker.waitingToSpawnFromSpawner.get(event.getSpawner());
+                
+                paire.setFirstElement(paire.getFirstElement()+1);
+                UltimateStacker.waitingToSpawnFromSpawner.put(event.getSpawner(), paire);
+        	}
+    	}
+    	
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)

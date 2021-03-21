@@ -107,6 +107,10 @@
             <id>spigot-repo</id> 
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+        <repository>
+		    <id>codemc-repo</id>
+		    <url>https://repo.codemc.org/repository/maven-public/</url>
+		  </repository>
     </repositories>
     <dependencies>
         <dependency>
@@ -162,5 +166,11 @@
             <artifactId>MythicMobs</artifactId>
             <version>4.10.1</version>
         </dependency>
+        <dependency>
+		    <groupId>world.bentobox</groupId>
+		    <artifactId>bentobox</artifactId>
+		    <version>1.15.2</version>
+		    <scope>provided</scope>
+		  </dependency>
     </dependencies>
 </project>
