@@ -730,52 +730,16 @@ public class InteractListeners implements Listener {
     	List<Inventory> invs = new ArrayList<>();;
     	
     	if(stack.getId()==stackId) { //Pas essentiel?
-    		
-			List<Villager> villageois = new ArrayList<>();
-			HashMap<UUID,Villager> villagerHashMap = new HashMap<UUID,Villager>();
+    			
+			List<Villager> villageois = getVillagers(stack);
 			
-			List<Villager> villagers = getVillagers(stack);
-			
-			if(villagers==null) {
-				int nb = stack.getAmount();
-	 			for(int i=0;i<nb;i++) {
-	 				
-	 				StackedEntity se = stack.getHostAsStackedEntity();
-	 				LivingEntity le = stack.getHostEntity();
-	 				
-	 				Villager villager = (Villager)le;
-	 				villageois.add(villager);
-	 				villagerHashMap.put(villager.getUniqueId(), villager);
-	 				
-	 				if(!(stackedVillagers.containsKey(se.getUniqueId()))) {
-	 					stackedVillagers.put(se.getUniqueId(),villager);
-	 				}
-				
-					LivingEntity entity = stack.getHostEntity();
-	 				entity.remove();
-	     	        LivingEntity newEntity2 = stack.takeOneAndSpawnEntitySync(entity.getLocation());
-	     	        stack = plugin.getEntityStackManager().updateStackSync(entity, newEntity2);
-	     	        stack.updateStackSync();
-	     	        stack.addEntityToStackLast(entity);
-					plugin.getDataManager().createStackedEntitySync(stack,se);
-	 			}
+			if(villageois==null) {
+				updateVillagers(stack);
+				villageois = getVillagers(stack);
 			}
-			else {
-				
-				Villager villager = (Villager)stack.getHostEntity();
-				villageois.add(villager);
-				
-				//Maj du host car trades pouvant changer
-				stackedVillagers.put(stack.getHostAsStackedEntity().getUniqueId(), villager);
 			
-				for(Villager v : villagers) {
-					if(!(v.getUniqueId().equals(((Villager)stack.getHostEntity()).getUniqueId()))) {
-						villageois.add(v);
-					}
-				}
-			}
- 			
- 			
+			System.out.println(villageois.size());
+
  			/* -------------- PARTIE INVENTAIRES --------------- */
 			
 	    	List<ItemStack> itemstacks = new ArrayList<>();
@@ -1167,18 +1131,22 @@ public class InteractListeners implements Listener {
     }
     
     public List<Villager>getVillagers(EntityStack stack){
-    	List<Villager> villagers = new ArrayList<Villager>();
-    	
-     	for(StackedEntity se : stack.stackedEntities) {
-     		if(stackedVillagers.containsKey(se.getUniqueId())) {
-     			villagers.add(stackedVillagers.get(se.getUniqueId()));
-     		}
+    	List<Villager> villagers = new ArrayList<Villager>();	
+		
+     	if(stack.getHostEntity()!=null) {
+     		updateHost(stack);
      	}
      	
      	if(stackedVillagers.containsKey(stack.getHostAsStackedEntity().getUniqueId())){
      		villagers.add(stackedVillagers.get(stack.getHostAsStackedEntity().getUniqueId()));
      	}
      	
+     	for(StackedEntity se : stack.stackedEntities) {
+     		if(stackedVillagers.containsKey(se.getUniqueId())) {
+     			villagers.add(stackedVillagers.get(se.getUniqueId()));
+     		}
+     	}
+
      	if(villagers.size()==stack.getAmount()) {
      		return villagers;
      	}
@@ -1302,7 +1270,7 @@ public class InteractListeners implements Listener {
 			
 			Villager villager = (Villager)le;
 
-			if(!(stackedVillagers.containsKey(se.getUniqueId()))) {
+			if(!(stackedVillagers.containsKey(se.getUniqueId())) || i==0) { //i==0 => updateHost
 				stackedVillagers.put(se.getUniqueId(),villager);
 			}
 		
@@ -1314,6 +1282,14 @@ public class InteractListeners implements Listener {
  	        stack.addEntityToStackLast(entity);
 			plugin.getDataManager().createStackedEntitySync(stack,se);
 		}
+    }
+    
+    
+    public void updateHost(EntityStack stack) {
+    	StackedEntity se = stack.getHostAsStackedEntity();
+		LivingEntity le = stack.getHostEntity();
+		Villager villager = (Villager)le;
+		stackedVillagers.put(se.getUniqueId(),villager);
     }
     
     @EventHandler

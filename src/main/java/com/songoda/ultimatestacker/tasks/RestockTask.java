@@ -31,7 +31,7 @@ public class RestockTask extends BukkitRunnable {
     public RestockTask(UltimateStacker plugin)
     {
         this.plugin = plugin;
-        runTaskTimer(plugin, 0, 3000);
+        runTaskTimer(plugin, 0, 100); //3000
     }
     
     @Override
