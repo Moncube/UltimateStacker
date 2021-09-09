@@ -11,7 +11,7 @@ import com.songoda.ultimatestacker.stackable.entity.EntityStack;
 import com.songoda.ultimatestacker.stackable.entity.Split;
 import com.songoda.ultimatestacker.stackable.entity.StackedEntity;
 
-import net.minecraft.server.v1_16_R3.*;
+import net.minecraft.nbt.NBTTagCompound;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.database.objects.Island;
 
@@ -19,20 +19,17 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Cat;
 import org.bukkit.entity.Entity;
@@ -51,7 +48,6 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.PlayerInteractAtEntityEvent;
 import org.bukkit.event.player.PlayerInteractEntityEvent;
-import org.bukkit.event.vehicle.VehicleEnterEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryView;
 import org.bukkit.inventory.ItemStack;
@@ -111,7 +107,7 @@ public class InteractListeners implements Listener {
 				return;
 			}
 			
-			net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
+			net.minecraft.world.item.ItemStack NMSitem = org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack.asNMSCopy(item);
 			
     		if(!(NMSitem.hasTag() && (NMSitem.getTag().hasKey("id") || NMSitem.getTag().hasKey("uuid")))) {
 				event.setCancelled(true);
@@ -254,7 +250,7 @@ public class InteractListeners implements Listener {
 			
 			if(iv.getTitle().contains("§aMatériaux recherchés")) {
 				
-         		net.minecraft.server.v1_16_R3.ItemStack itemWithoutNMS = CraftItemStack.asNMSCopy(item);
+         		net.minecraft.world.item.ItemStack itemWithoutNMS = CraftItemStack.asNMSCopy(item);
                 NBTTagCompound compound = itemWithoutNMS.getOrCreateTag();
                 compound.remove("id");
                 itemWithoutNMS.setTag(compound);
@@ -280,7 +276,7 @@ public class InteractListeners implements Listener {
 			}
 			else {
 				
-         		net.minecraft.server.v1_16_R3.ItemStack itemWithoutNMS = CraftItemStack.asNMSCopy(item);
+         		net.minecraft.world.item.ItemStack itemWithoutNMS = CraftItemStack.asNMSCopy(item);
                 NBTTagCompound compound = itemWithoutNMS.getOrCreateTag();
                 compound.remove("id");
                 itemWithoutNMS.setTag(compound);
@@ -310,7 +306,7 @@ public class InteractListeners implements Listener {
 		}
 		
 		if(iv.getTitle().equals("§aEffacer le nom du villageois ?")){
-			net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
+			net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
 			if(item.getItemMeta().getDisplayName().equals("§aOui")) {
 				Villager toDelete = null;
 				for(Villager v : toRename) {
@@ -336,7 +332,7 @@ public class InteractListeners implements Listener {
     			return;
     		}
     		
-    		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
+    		net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
     		if(!(NMSitem.hasTag() && (NMSitem.getTag().hasKey("id") || NMSitem.getTag().hasKey("uuid")))) {
 				event.setCancelled(true);
 				return;
@@ -513,7 +509,7 @@ public class InteractListeners implements Listener {
     			return;
     		}
     		
-    		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
+    		net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(item);
     		
     		if(item == null) {
 				event.setCancelled(true);
@@ -587,7 +583,7 @@ public class InteractListeners implements Listener {
         			is.setItemMeta(imRename);
         		}
         		
-        		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(is);
+        		net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(is);
                 NBTTagCompound comp = NMSitem.getTag();
                 comp.setString("uuid",uuid);
                 NMSitem.setTag(comp);
@@ -787,7 +783,7 @@ public class InteractListeners implements Listener {
 	                    	imNext.setDisplayName("§5Page suivante");
 	                    	next.setItemMeta(imNext);
 	                    	
-                    		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(next);
+	                    	net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(next);
                     		NBTTagCompound comp = NMSitem.getTag();
                            	comp.setInt("id",stack.getId());
                            	NMSitem.setTag(comp);
@@ -813,7 +809,7 @@ public class InteractListeners implements Listener {
 			                    	imLast.setDisplayName("§5Page précédente");
 			                    	last.setItemMeta(imLast);
 			                    	
-		                    		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(last);
+			                    	net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(last);
 		                    		NBTTagCompound comp = NMSitem.getTag();
 		                           	comp.setInt("id",stack.getId());
 		                           	NMSitem.setTag(comp);
@@ -830,7 +826,7 @@ public class InteractListeners implements Listener {
 		                	        imChest.setDisplayName("§5Vendre");
 		                	        chest.setItemMeta(imChest);
 		                	        
-	                        		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(chest);
+		                	        net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(chest);
 	                        		NBTTagCompound comp = NMSitem.getTag();
 	                               	comp.setInt("id",stack.getId());
 	                               	NMSitem.setTag(comp);
@@ -845,7 +841,7 @@ public class InteractListeners implements Listener {
 				    				imItem.setLore(Arrays.asList("§fCliquer pour supprimer","§fde la recherche"));
 				    				in2.setItemMeta(imItem);
 				    				
-				             		net.minecraft.server.v1_16_R3.ItemStack NMSitem2 = CraftItemStack.asNMSCopy(in2);
+				    				net.minecraft.world.item.ItemStack NMSitem2 = CraftItemStack.asNMSCopy(in2);
 				                    NBTTagCompound comp = NMSitem2.getOrCreateTag();
 				                    comp.setInt("id",stack.getId());
 				                    NMSitem2.setTag(comp);
@@ -862,7 +858,7 @@ public class InteractListeners implements Listener {
 		                	        imEmerald.setDisplayName("§5Acheter");
 		                	        emerald.setItemMeta(imEmerald);
 		                	        
-	                        		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(emerald);
+		                	        net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(emerald);
 	                        		NBTTagCompound comp = NMSitem.getOrCreateTag();
 	                        		comp.setInt("id",stack.getId());
 	                        		NMSitem.setTag(comp);
@@ -877,7 +873,7 @@ public class InteractListeners implements Listener {
 				    				imItem.setLore(Arrays.asList("§fCliquer pour supprimer","§fde la recherche"));
 				    				out2.setItemMeta(imItem);
 				    				
-				             		net.minecraft.server.v1_16_R3.ItemStack NMSitem2 = CraftItemStack.asNMSCopy(out2);
+				             		net.minecraft.world.item.ItemStack NMSitem2 = CraftItemStack.asNMSCopy(out2);
 				                    NBTTagCompound comp = NMSitem2.getTag();
 				                    comp.setInt("id",stack.getId());
 				                    NMSitem2.setTag(comp);
@@ -903,7 +899,7 @@ public class InteractListeners implements Listener {
 	    				for(org.bukkit.inventory.MerchantRecipe mr : mrs) {
 	    					for(ItemStack is : mr.getIngredients()) {
 	    						
-			             		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(in);
+			             		net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(in);
 			                    NBTTagCompound comp = NMSitem.getOrCreateTag();
 			                    comp.remove("id");
 			                    NMSitem.setTag(comp);
@@ -919,7 +915,7 @@ public class InteractListeners implements Listener {
 		    		if(out != null) {
 		    			for(org.bukkit.inventory.MerchantRecipe mr : mrs) {
 		    				
-		             		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(out);
+		             		net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(out);
 		                    NBTTagCompound comp = NMSitem.getOrCreateTag();
 		                    comp.remove("id");
 		                    NMSitem.setTag(comp);
@@ -937,7 +933,7 @@ public class InteractListeners implements Listener {
 	                 	imVillagerLink.setDisplayName("§5§o"+villagerEntity.getProfession().toString());
 	             		villagerLink.setItemMeta(imVillagerLink);
 	             		
-	             		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(villagerLink);
+	             		net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(villagerLink);
 	                    NBTTagCompound comp = NMSitem.getTag();
 	                    comp.setString("uuid",villagerEntity.getUniqueId().toString());
 	                    NMSitem.setTag(comp);
@@ -1009,7 +1005,7 @@ public class InteractListeners implements Listener {
 		                    	imClose.setDisplayName("§4Fermer");
 		                    	close.setItemMeta(imClose);
 		                    	
-			    				net.minecraft.server.v1_16_R3.ItemStack NMSitem2 = CraftItemStack.asNMSCopy(close);
+			    				net.minecraft.world.item.ItemStack NMSitem2 = CraftItemStack.asNMSCopy(close);
 		                        NBTTagCompound comp = NMSitem2.getOrCreateTag();
 		                        comp.setInt("id",stack.getId());
 		                        NMSitem2.setTag(comp);
@@ -1024,7 +1020,7 @@ public class InteractListeners implements Listener {
 			    		if(itemstacks.get(i).getMaxStackSize()!=1) {
 			    			ItemStack is = new ItemStack(itemstacks.get(i).getType(),1);
 	            	        
-		    				net.minecraft.server.v1_16_R3.ItemStack NMSitem2 = CraftItemStack.asNMSCopy(is);
+		    				net.minecraft.world.item.ItemStack NMSitem2 = CraftItemStack.asNMSCopy(is);
 	                        NBTTagCompound comp = NMSitem2.getOrCreateTag();
 	                        comp.setInt("id",stack.getId());
 	                        NMSitem2.setTag(comp);
@@ -1035,7 +1031,7 @@ public class InteractListeners implements Listener {
 			    		else {
 			    			ItemStack is = itemstacks.get(i);
 			    			
-	                 		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(is);
+	                 		net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(is);
 	                        NBTTagCompound comp = NMSitem.getOrCreateTag();
 	                        comp.setInt("id",stack.getId());
 	                        NMSitem.setTag(comp);
@@ -1169,7 +1165,7 @@ public class InteractListeners implements Listener {
         imGreenGlass.setDisplayName("§aOui");
         greenGlass.setItemMeta(imGreenGlass);
         
- 		net.minecraft.server.v1_16_R3.ItemStack NMSitem = CraftItemStack.asNMSCopy(greenGlass);
+ 		net.minecraft.world.item.ItemStack NMSitem = CraftItemStack.asNMSCopy(greenGlass);
         NBTTagCompound comp = NMSitem.getTag();
         comp.setString("uuid",e.getUniqueId().toString());
         NMSitem.setTag(comp);

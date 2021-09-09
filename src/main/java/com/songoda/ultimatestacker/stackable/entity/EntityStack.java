@@ -145,9 +145,6 @@ public class EntityStack extends ColdEntityStack {
         killed.remove();
         LivingEntity newEntity = takeOneAndSpawnEntity(killed.getLocation());
 
-        //if (!EntityUtils.isAware(killed))
-        //    EntityUtils.setUnaware(newEntity);
-
         // In versions 1.14 and below experience is not dropping. Because of this we are doing this ourselves.
         if (ServerVersion.isServerVersionAtOrBelow(ServerVersion.V1_14)) {
             Location killedLocation = killed.getLocation();

@@ -7,36 +7,20 @@ package com.songoda.ultimatestacker.tasks;
 
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-import java.util.UUID;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
-import org.bukkit.craftbukkit.v1_16_R3.entity.CraftAbstractVillager;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
-import org.bukkit.entity.IronGolem;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Villager;
-import org.bukkit.material.Bed;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.util.BoundingBox;
-
 import com.songoda.ultimatestacker.UltimateStacker;
-import com.songoda.ultimatestacker.listeners.InteractListeners;
 import com.songoda.ultimatestacker.stackable.entity.EntityStack;
-import com.songoda.ultimatestacker.stackable.entity.StackedEntity;
-
-import io.lumine.xikage.mythicmobs.adapters.bukkit.entities.BukkitIronGolem;
-import net.minecraft.server.v1_16_R3.EntityIronGolem;
-import net.minecraft.server.v1_16_R3.EntityVillager;
-import net.minecraft.server.v1_16_R3.VillagerType;
-
 /**
  *
  * @author Florian

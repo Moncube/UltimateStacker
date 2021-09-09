@@ -1,15 +1,15 @@
 package com.songoda.ultimatestacker.listeners;
 
+import com.songoda.core.compatibility.CompatibleHand;
 import com.songoda.core.compatibility.ServerVersion;
 import com.songoda.core.nms.NmsManager;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.stackable.spawner.SpawnerStack;
 import com.songoda.ultimatestacker.stackable.spawner.SpawnerStackManager;
-import com.songoda.ultimatestacker.utils.Methods;
 import com.songoda.ultimatestacker.utils.Paire;
-import com.songoda.ultimatestacker.utils.ReflectionUtil;
 
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -30,6 +30,8 @@ public class SpawnerListeners implements Listener {
 
     private final UltimateStacker plugin;
 
+    private static final boolean mcmmo = Bukkit.getPluginManager().isPluginEnabled("mcMMO");
+
     public SpawnerListeners(UltimateStacker plugin) {
         this.plugin = plugin;
     }
@@ -39,17 +41,30 @@ public class SpawnerListeners implements Listener {
         /*if (!Settings.STACK_ENTITIES.getBoolean()
                 || !plugin.spawnersEnabled()
                 || plugin.getStackingTask().isWorldDisabled(event.getLocation().getWorld())) return;
+
         SpawnerStackManager spawnerStackManager = plugin.getSpawnerStackManager();
         if (!spawnerStackManager.isSpawner(event.getSpawner().getLocation())) return;
 
-        SpawnerStack spawnerStack = spawnerStackManager.getSpawner(event.getSpawner().getLocation());
+        Entity entity = event.getEntity();
+        if (entity.getType() == EntityType.FIREWORK) return;
+        if (entity.getVehicle() != null) {
+            entity.getVehicle().remove();
+            entity.remove();
+        }
 
-        spawnerStack.initialize();
+        if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_11)) {
+            if (entity.getPassengers().size() != 0) {
+                for (Entity e : entity.getPassengers()) {
+                    e.remove();
+                }
+                entity.remove();
+            }
+        }
+        entity.remove();
 
-        EntityStack stack = plugin.getEntityStackManager().addStack((LivingEntity)event.getEntity());
-        stack.createDuplicates(spawnerStack.calculateSpawnCount());
-        stack.updateStack();
+        Location location = event.getSpawner().getLocation();
 
+<<<<<<< HEAD
         plugin.getStackingTask().attemptSplit(stack, (LivingEntity) event.getEntity());*/
     	
     	if ( Settings.STACK_ENTITIES.getBoolean() &&
@@ -66,7 +81,6 @@ public class SpawnerListeners implements Listener {
                 UltimateStacker.waitingToSpawnFromSpawner.put(event.getSpawner(), paire);
         	}
     	}
-    	
     }
 
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
@@ -110,7 +124,7 @@ public class SpawnerListeners implements Listener {
                     .replace("MOOSHROOM", "MUSHROOM_COW")
                     .replace("ZOMBIE_PIGMAN", "PIG_ZOMBIE"));
         else if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_12)) {
-            String str = ReflectionUtil.getNBTTagCompound(ReflectionUtil.getNMSItemStack(event.getItem())).toString();
+            String str = NmsManager.getNbt().of(event.getItem()).toString();
             if (str.contains("minecraft:"))
                 entityType = EntityType.fromName(str.substring(str.indexOf("minecraft:") + 10, str.indexOf("\"}")));
             else
@@ -131,7 +145,7 @@ public class SpawnerListeners implements Listener {
         }
 
 
-        CreatureSpawner creatureSpawner =  (CreatureSpawner) block.getState();
+        CreatureSpawner creatureSpawner = (CreatureSpawner) block.getState();
 
         if (entityType == creatureSpawner.getSpawnedType()) {
             plugin.getLocale().getMessage("event.egg.sametype")
@@ -143,8 +157,7 @@ public class SpawnerListeners implements Listener {
         creatureSpawner.update();
 
         plugin.updateHologram(spawner);
-        if (player.getGameMode() != GameMode.CREATIVE) {
-            Methods.takeItem(player, stackSize);
-        }
+        if (player.getGameMode() != GameMode.CREATIVE)
+            CompatibleHand.getHand(event).takeItem(player, stackSize);
     }
 }

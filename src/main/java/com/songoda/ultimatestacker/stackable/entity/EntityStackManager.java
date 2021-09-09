@@ -146,6 +146,7 @@ public class EntityStackManager {
         }
         stack.updateStack();
         stacks.put(entity.getUniqueId(), stack);
+        plugin.getDataManager().updateHost(coldStack);
     }
 
     public void unloadStack(LivingEntity entity) {
