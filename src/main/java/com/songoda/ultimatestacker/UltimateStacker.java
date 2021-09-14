@@ -286,11 +286,12 @@ public class UltimateStacker extends SongodaPlugin {
     }
     
     public void startSpawnerAndFarmsActivity() {
-    	World islandsWorld = Bukkit.getWorld("askyblock");
         Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
 			
 			@Override
 			public void run() {
+				
+				World islandsWorld = Bukkit.getWorld("askyblock");
 				
 				for ( Entry<CreatureSpawner, Paire<Integer, Location>> entry : waitingToSpawnFromSpawner.entrySet() ) {
 					
@@ -310,7 +311,6 @@ public class UltimateStacker extends SongodaPlugin {
 		            stack.updateStack();
 		            getStackingTask().attemptSplit(stack, entity);
 		            
-		            //System.out.println("spawned "+entry.getKey().getFirstElement()+ " at "+ getLocationToSpawnFarmEntities(entry.getKey().getSecondElement()) + " (x"+entry.getValue()+")");
 				}
 				waitingToSpawnFromFarms.clear();
 				
