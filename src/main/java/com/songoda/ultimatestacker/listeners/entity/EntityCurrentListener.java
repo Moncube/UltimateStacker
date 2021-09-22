@@ -23,10 +23,19 @@ public class EntityCurrentListener implements Listener {
         if (stackManager.isStackedAndLoaded(event.getEntity().getUniqueId())
                 && event.getEntity() instanceof LivingEntity
                 && event.getTransformedEntity() instanceof LivingEntity) {
-            EntityStack stack = stackManager.updateStack((LivingEntity) event.getEntity(),
-                    (LivingEntity) event.getTransformedEntity());
-            stack.releaseHost();
-            stack.updateStack();
+        	
+        	EntityStack stack = stackManager.updateStack((LivingEntity) event.getEntity(), (LivingEntity) event.getTransformedEntity());
+        	if ( !UltimateStacker.getInstance().getMobFile().getBoolean("Mobs." + event.getEntityType().name() + ".TransformWholeStack") ) {
+        		stack.releaseHost();
+                stack.updateStack();
+        	} else {
+        		LivingEntity entity = (LivingEntity) event.getTransformedEntity();
+	            EntityStack newStack = plugin.getEntityStackManager().addStack(entity);
+	            newStack.createDuplicates(stack.getAmount()-1);
+	            newStack.updateStack();
+	            plugin.getStackingTask().attemptSplit(newStack, entity);
+	            
+        	}
         }
     }
 }
