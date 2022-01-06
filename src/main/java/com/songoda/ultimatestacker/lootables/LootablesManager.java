@@ -41,7 +41,7 @@ public class LootablesManager {
     public List<Drop> getDrops(LivingEntity entity) {
         List<Drop> toDrop = new ArrayList<>();
 
-        if (entity instanceof Ageable && !((Ageable) entity).isAdult()
+        if (entity instanceof Ageable && !((Ageable) entity).isAdult() && entity.getType() != EntityType.ZOMBIFIED_PIGLIN
                 || !lootManager.getRegisteredLootables().containsKey(entity.getType().name())) return toDrop;
 
         Lootable lootable = lootManager.getRegisteredLootables().get(entity.getType().name());
