@@ -1,6 +1,5 @@
 package com.songoda.ultimatestacker.listeners.item;
 
-import com.songoda.core.utils.BlockUtils;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.utils.Methods;
@@ -65,7 +64,7 @@ public class ItemListeners implements Listener {
 
         Methods.updateInventory(event.getItem(), event.getInventory());
         if (event.getInventory().getHolder() instanceof BlockState)
-            BlockUtils.updateAdjacentComparators(((BlockState) event.getInventory().getHolder()).getLocation());
+        	((BlockState) event.getInventory().getHolder()).getBlock().getState().update();
     }
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
@@ -85,4 +84,5 @@ public class ItemListeners implements Listener {
 
         UltimateStacker.updateItemAmount(event.getEntity(), itemStack, itemStack.getAmount());
     }
+    
 }
