@@ -524,12 +524,17 @@ public class UltimateStacker extends SongodaPlugin {
                 spawnerStackManager.removeSpawner(stack.getLocation());
         // are holograms enabled?
         if (!stack.areHologramsEnabled() && !HologramManager.getManager().isEnabled()) return;
-        // create the hologram
-        HologramManager.updateHologram(stack.getLocation(), stack.getHologramName());
+        // update the hologram
+        if (!HologramManager.isHologramLoaded(stack.getHologramId())) {
+            HologramManager.createHologram(stack.getHologramId(), stack.getLocation(), stack.getHologramName());
+            return;
+        }
+
+        HologramManager.updateHologram(stack.getHologramId(), stack.getHologramName());
     }
 
     public void removeHologram(Hologramable stack) {
-        HologramManager.removeHologram(stack.getLocation());
+        HologramManager.removeHologram(stack.getHologramId());
     }
 
     //////// Convenient API //////////
@@ -568,6 +573,9 @@ public class UltimateStacker extends SongodaPlugin {
 
     public static void updateItemMeta(Item item, ItemStack itemStack, int newAmount) {
         Material material = itemStack.getType();
+        if (material == Material.AIR)
+            return;
+
         String name = TextUtils.convertToInvisibleString("IS") + Methods.compileItemName(itemStack, newAmount);
 
         boolean blacklisted = isMaterialBlacklisted(itemStack);

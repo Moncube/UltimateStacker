@@ -2,7 +2,7 @@
     <groupId>com.songoda</groupId>
     <artifactId>UltimateStacker</artifactId>
     <modelVersion>4.0.0</modelVersion>
-    <version>2.1.7</version>
+    <version>2.2.0</version>
     <build>
         <defaultGoal>clean install</defaultGoal>
         <finalName>UltimateStacker-${project.version}</finalName>
@@ -56,7 +56,6 @@
                             <artifactSet>
                                 <includes>
                                     <include>com.songoda:SongodaCore</include>
-                                    <include>com.songoda:Lootables</include>
                                     <include>com.zaxxer:HikariCP</include>
                                     <include>org.slf4j:slf4j-api</include>
                                     <include>org.slf4j:slf4j-nop</include>
@@ -102,31 +101,29 @@
     </pluginRepositories>
     <repositories>
         <repository>
-            <id>public</id>
-            <url>http://repo.songoda.com/repository/public/</url>
+            <id>songoda-public</id>
+            <url>https://repo.songoda.com/repository/public/</url>
         </repository>
+
         <repository>
-            <id>CodeMC</id>
-            <url>https://repo.codemc.org/repository/maven-public</url>
-        </repository>
-        <repository>
-            <id>spigot-repo</id> 
+            <id>spigotmc-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
+
         <repository>
-		    <id>codemc-repo</id>
-		    <url>https://repo.codemc.org/repository/maven-public/</url>
-		  </repository>
+            <id>CodeMC</id>
+            <url>https://repo.codemc.org/repository/maven-public/</url>
+        </repository>
 		  <repository>
 	        <id>papermc</id>
 	        <url>https://papermc.io/repo/repository/maven-public/</url>
       </repository>
     </repositories>
-    <dependencies>  
+    <dependencies>
    		<dependency>
-	       <groupId>com.destroystokyo.paper</groupId>
+	       <groupId>io.papermc.paper</groupId>
 	       <artifactId>paper-api</artifactId>
-	       <version>1.16.4-R0.1-SNAPSHOT</version>
+	       <version>1.18.1-R0.1-SNAPSHOT</version>
 	       <scope>provided</scope>
     	</dependency>
         <dependency>
@@ -139,13 +136,8 @@
         <dependency>
             <groupId>com.songoda</groupId>
             <artifactId>SongodaCore</artifactId>
-            <version>2.6.8</version>
+            <version>2.6.10</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>com.songoda</groupId>
-            <artifactId>Lootables</artifactId>
-            <version>1.0.9</version>
         </dependency>
         <dependency>
             <groupId>com.bgsoftware</groupId>

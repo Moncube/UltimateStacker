@@ -1,8 +1,8 @@
 package com.songoda.ultimatestacker.stackable.entity;
 
 import com.songoda.core.compatibility.ServerVersion;
-import com.songoda.lootables.loot.Drop;
-import com.songoda.lootables.loot.DropUtils;
+import com.songoda.core.lootables.loot.Drop;
+import com.songoda.core.lootables.loot.DropUtils;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.utils.Methods;
@@ -142,6 +142,7 @@ public class EntityStack extends ColdEntityStack {
     private void handleSingleStackDeath(LivingEntity killed, List<Drop> drops, int droppedExp, EntityDeathEvent event) {
         EntityStackManager stackManager = plugin.getEntityStackManager();
 
+        Vector velocity = killed.getVelocity().clone();
         killed.remove();
         LivingEntity newEntity = takeOneAndSpawnEntity(killed.getLocation());
 
@@ -154,7 +155,7 @@ public class EntityStack extends ColdEntityStack {
 
         DropUtils.processStackedDrop(killed, drops, event);
 
-        newEntity.setVelocity(killed.getVelocity());
+        newEntity.setVelocity(velocity);
         stackManager.updateStack(killed, newEntity);
 
         updateStack();
