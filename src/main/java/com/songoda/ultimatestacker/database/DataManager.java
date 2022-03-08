@@ -277,7 +277,7 @@ public class DataManager extends DataManagerAbstract {
                 }
                 statement.executeBatch();
             }
-        }));
+        }));*/
     }
 
     public void deleteSpawner(SpawnerStack spawnerStack) {

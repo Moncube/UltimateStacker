@@ -1,7 +1,5 @@
 package com.songoda.ultimatestacker;
 
-import com.songoda.ultimatestacker.tasks.GolemSpawningTask;
-import com.songoda.ultimatestacker.tasks.RestockTask;
 import com.songoda.core.SongodaCore;
 import com.songoda.core.SongodaPlugin;
 import com.songoda.core.commands.CommandManager;
@@ -95,9 +93,9 @@ public class UltimateStacker extends SongodaPlugin {
     private CommandManager commandManager;
     private CustomEntityManager customEntityManager;
     private StackingTask stackingTask;
-    private RestockTask tradesTask;
+    /*private RestockTask tradesTask;
     private GolemSpawningTask golemTask;
-    private InteractListeners interactListeners;
+    private InteractListeners interactListeners;*/
 
     private DatabaseConnector databaseConnector;
     private DataMigrationManager dataMigrationManager;
@@ -113,9 +111,9 @@ public class UltimateStacker extends SongodaPlugin {
         return INSTANCE;
     }
     
-    public InteractListeners getInteractListeners() {
+    /*public InteractListeners getInteractListeners() {
     	return interactListeners;
-    }
+    }*/
 
     @Override
     public void onPluginLoad() {
@@ -221,7 +219,7 @@ public class UltimateStacker extends SongodaPlugin {
         pluginManager.registerEvents(new BlockListeners(this), this);
         pluginManager.registerEvents(new DeathListeners(this), this);
         pluginManager.registerEvents(new ShearListeners(this), this);
-        pluginManager.registerEvents(interactListeners = new InteractListeners(this), this);
+        pluginManager.registerEvents(/*interactListeners = */new InteractListeners(this), this);
         if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13))
             pluginManager.registerEvents(new EntityCurrentListener(this), this);
 
@@ -412,8 +410,8 @@ public class UltimateStacker extends SongodaPlugin {
             }
         });
         
-        this.tradesTask = new RestockTask(this); // Ajout task qui gère les reset de trades
-        this.golemTask = new GolemSpawningTask(this); // Ajout task qui gère le spawn des golems
+        /*this.tradesTask = new RestockTask(this); // Ajout task qui gère les reset de trades
+        this.golemTask = new GolemSpawningTask(this); // Ajout task qui gère le spawn des golems*/
     }
 
     public void addExp(Player player, EntityStack stack) {
@@ -475,13 +473,13 @@ public class UltimateStacker extends SongodaPlugin {
 		this.stackingTask = stackingTask;
 	}
     
-    public RestockTask getTradesTask() {
+    /*public RestockTask getTradesTask() {
     	return tradesTask;
     }
     
     public GolemSpawningTask getGolemTask() {
     	return golemTask;
-    }
+    }*/
 
     public Config getMobFile() {
         return mobFile;

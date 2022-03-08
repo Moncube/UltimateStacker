@@ -11,7 +11,7 @@ import com.songoda.ultimatestacker.stackable.entity.EntityStack;
 import com.songoda.ultimatestacker.stackable.entity.Split;
 import com.songoda.ultimatestacker.stackable.entity.StackedEntity;
 
-import net.minecraft.nbt.NBTTagCompound;
+//import net.minecraft.nbt.NBTTagCompound;
 import world.bentobox.bentobox.BentoBox;
 import world.bentobox.bentobox.database.objects.Island;
 
@@ -29,7 +29,7 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
+//import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.Ageable;
 import org.bukkit.entity.Cat;
 import org.bukkit.entity.Entity;
@@ -59,7 +59,7 @@ public class InteractListeners implements Listener {
 
     private final UltimateStacker plugin;
             
-    private HashMap<Player,HashMap<Integer,List<Inventory>>> achats = new HashMap<Player,HashMap<Integer,List<Inventory>>>();
+    /*private HashMap<Player,HashMap<Integer,List<Inventory>>> achats = new HashMap<Player,HashMap<Integer,List<Inventory>>>();
     private HashMap<Player,HashMap<Integer,List<Inventory>>> ventes = new HashMap<Player,HashMap<Integer,List<Inventory>>>();
     private HashMap<Player,HashMap<Integer,List<Inventory>>> parcours = new HashMap<Player,HashMap<Integer,List<Inventory>>>();
         
@@ -74,14 +74,15 @@ public class InteractListeners implements Listener {
     	return stackedVillagers;
     }
     
-    private List<Villager> toRename = new ArrayList<>();
+    private List<Villager> toRename = new ArrayList<>();*/
     
     public InteractListeners(UltimateStacker plugin) {
         this.plugin = plugin;
-        updateBreedLimit();
-        createVillagersLimitsYAML(plugin);
+        //updateBreedLimit();
+        //createVillagersLimitsYAML(plugin);
     }
-    
+
+    /*
     public void createVillagersLimitsYAML(UltimateStacker plugin) {
     	f = new File(plugin.getDataFolder(),"VillagersLimits.yml");
     	cfg = YamlConfiguration.loadConfiguration(f);
@@ -636,7 +637,7 @@ public class InteractListeners implements Listener {
         		StackedEntity seHost = stack.getHostAsStackedEntity();
         		LivingEntity entity = stack.getHostEntity();
         		
-        		/* --- SAUVEGARDE --- */
+        		// --- SAUVEGARDE ---
         		
         		if(stackedVillagers.containsKey(seHost.getUniqueId())) {
         			stackedVillagers.put(seHost.getUniqueId(), (Villager)entity);
@@ -645,7 +646,7 @@ public class InteractListeners implements Listener {
         			System.out.println("§4[UltimateStacker] Erreur de synchronisation des villageois");
         		}
         		
-        		/* ------------------ */
+        		// ------------------
         		
 				entity.remove();
 	        	NBTEntity nbtEntity = NmsManager.getNbt().newEntity();
@@ -677,7 +678,7 @@ public class InteractListeners implements Listener {
     		StackedEntity seHost = stack.getHostAsStackedEntity();
     		LivingEntity entity = stack.getHostEntity();
     		
-    		/* --- SAUVEGARDE --- */
+    		// --- SAUVEGARDE ---
     		
     		if(stackedVillagers.containsKey(seHost.getUniqueId())) {
     			stackedVillagers.put(seHost.getUniqueId(), (Villager)entity);
@@ -686,7 +687,7 @@ public class InteractListeners implements Listener {
     			System.out.println("§4[UltimateStacker] Erreur de synchronisation des villageois");
     		}
     		
-    		/* ------------------ */
+    		// ------------------
     		
     		entity.remove();
     		
@@ -736,7 +737,7 @@ public class InteractListeners implements Listener {
 			
 			System.out.println(villageois.size());
 
- 			/* -------------- PARTIE INVENTAIRES --------------- */
+ 			// -------------- PARTIE INVENTAIRES ---------------
 			
 	    	List<ItemStack> itemstacks = new ArrayList<>();
 	    	
@@ -1094,24 +1095,7 @@ public class InteractListeners implements Listener {
 	     						}
 	     					}
 	     				}
-	         			
-	         			/*
-	         			//Check changement de métier villageois host
-	         			if(found==true) {
-		         			List<Villager> villagers = getVillagers(stack);
-		         			Boolean trouve = false;
-	    					for(int i=0;i<villagers.size() && trouve==false;i++) {
-	    						if(villagers.get(i).getUniqueId()==v.getUniqueId()) {
-	    							System.out.println("trouve");
-	    							if(villagers.get(i).getRecipes()!=v.getRecipes()) {
-	    								found=false;
-	    								trouve=true;
-	    								System.out.println("found false");
-	    							}
-	    						}
-	    					}
-	         			}	    				
-						*/
+
 	         			
 	         			if(found==false) {
 	         				invs = getSortedInventories(stack.getId(), stack, "Parcours", null, null);
@@ -1238,23 +1222,7 @@ public class InteractListeners implements Listener {
     	
     	return jobBlock;
     }
-    
-    /*     PARTIE FARM DES VILLAGEOIS -- ANNULE
-    
-    @EventHandler
-    public void onFarm(EntityChangeBlockEvent event) {
-    	if(event.getEntityType()==EntityType.VILLAGER){
-    		LivingEntity entity = (LivingEntity)event.getEntity();
-    		if (plugin.getEntityStackManager().isStackedAndLoaded(entity)) {
-    			EntityStack stack = plugin.getEntityStackManager().getStack(entity);
-    			for(StackedEntity se : stack.stackedEntities) {
-    				
-    			}
-    		}
-    	}
-    }
-    
-    */
+
     
     public void updateVillagers(EntityStack stack) {
 
@@ -1415,7 +1383,7 @@ public class InteractListeners implements Listener {
 		return entity.getLocation().getX() >= island.getMinProtectedX() && entity.getLocation().getX() <= island.getMaxProtectedX() && 
 				entity.getLocation().getZ() >= island.getMinProtectedZ() && entity.getLocation().getZ() <= island.getMaxProtectedZ(); 
 	}
-    
+    */
 
     
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
