@@ -107,26 +107,12 @@
       </repository>
     </repositories>
     <dependencies>
-        <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.18-R0.1-SNAPSHOT</version>
-            <scope>provided</scope>
-        </dependency>
-
    		<dependency>
 	       <groupId>io.papermc.paper</groupId>
 	       <artifactId>paper-api</artifactId>
-	       <version>1.18.1-R0.1-SNAPSHOT</version>
+	       <version>1.18.2-R0.1-SNAPSHOT</version>
 	       <scope>provided</scope>
     	</dependency>
-        <!--<dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.17.1-R0.1-SNAPSHOT</version>
-            <scope>system</scope>
-            <systemPath>${project.basedir}/lib/spigot-1.17.1.jar</systemPath>
-        </dependency> -->
         <dependency>
             <groupId>com.songoda</groupId>
             <artifactId>SongodaCore</artifactId>
@@ -161,5 +147,13 @@
             <version>4.10.1</version>
             <scope>provided</scope>
         </dependency>
+
+        <dependency>
+            <groupId>world.bentobox</groupId>
+            <artifactId>bentobox</artifactId>
+            <version>1.15.5</version>
+            <scope>provided</scope>
+        </dependency>
+
     </dependencies>
 </project>
