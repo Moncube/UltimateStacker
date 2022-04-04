@@ -3,6 +3,8 @@ package com.songoda.ultimatestacker.listeners;
 import com.songoda.core.compatibility.CompatibleHand;
 import com.songoda.core.compatibility.ServerVersion;
 import com.songoda.core.nms.NmsManager;
+import com.songoda.core.third_party.de.tr7zw.nbtapi.NBTItem;
+import com.songoda.core.utils.EntityUtils;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.stackable.spawner.SpawnerStack;
@@ -25,6 +27,7 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.SpawnerSpawnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.material.SpawnEgg;
+import org.bukkit.metadata.FixedMetadataValue;
 
 public class SpawnerListeners implements Listener {
 
@@ -66,17 +69,17 @@ public class SpawnerListeners implements Listener {
 
 <<<<<<< HEAD
         plugin.getStackingTask().attemptSplit(stack, (LivingEntity) event.getEntity());*/
-    	
+
     	if ( Settings.STACK_ENTITIES.getBoolean() &&
     			event.getLocation().getWorld().getName().equals("askyblock") &&
     			UltimateStacker.getInstance().getMobFile().getBoolean("Mobs." + event.getEntityType().name() + ".Enabled")) {
-    		
+
     		event.setCancelled(true);
         	if ( event.getEntity() instanceof LivingEntity ) {
         		Paire<Integer, Location> paire = new Paire<>(0, event.getLocation());
                 if ( UltimateStacker.waitingToSpawnFromSpawner.containsKey(event.getSpawner()) )
                 	paire = UltimateStacker.waitingToSpawnFromSpawner.get(event.getSpawner());
-                
+
                 paire.setFirstElement(paire.getFirstElement()+1);
                 UltimateStacker.waitingToSpawnFromSpawner.put(event.getSpawner(), paire);
         	}
@@ -106,7 +109,7 @@ public class SpawnerListeners implements Listener {
 
         if (!Settings.EGGS_CONVERT_SPAWNERS.getBoolean()
                 || (event.getItem().hasItemMeta() && event.getItem().getItemMeta().hasDisplayName()
-                && !NmsManager.getNbt().of(event.getItem()).has("UC"))) {
+                && !new NBTItem(event.getItem()).hasKey("UC"))) {
             return;
         }
 
