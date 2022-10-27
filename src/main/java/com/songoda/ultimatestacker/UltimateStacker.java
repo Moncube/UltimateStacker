@@ -538,6 +538,19 @@ public class UltimateStacker extends SongodaPlugin {
     //////// Convenient API //////////
 
     /**
+     * Spawn a stacked item at a location
+     *
+     * @param item     The item to spawn
+     * @param amount   The amount of items to spawn
+     * @param location The location to spawn the item
+     */
+    public static void spawnStackedItem(ItemStack item, int amount, Location location) {
+        location.getWorld().dropItem(location, item, dropped -> {
+            updateItemAmount(dropped, amount);
+        });
+    }
+
+    /**
      * Change the stacked amount for this item
      *
      * @param item      item entity to update
