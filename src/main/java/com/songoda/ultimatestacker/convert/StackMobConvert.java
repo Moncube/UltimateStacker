@@ -4,6 +4,7 @@ import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.stackable.entity.EntityStackManager;
 import org.bukkit.Bukkit;
 import uk.antiperson.stackmob.StackMob;
+import uk.antiperson.stackmob.entity.StackEntity;
 
 import java.util.Map;
 import java.util.UUID;
@@ -37,9 +38,9 @@ public class StackMobConvert implements Convert {
     @Override
     public void convertEntities() {
         EntityStackManager entityStackManager = plugin.getEntityStackManager();
-        for (Map.Entry<UUID, Integer> entry : stackMob.getStorageManager().getAmountCache().entrySet()) {
-            if (!entityStackManager.isStackedAndLoaded(entry.getKey())) {
-                entityStackManager.addLegacyColdStack(entry.getKey(), entry.getValue());
+        for ( StackEntity stack : stackMob.getEntityManager().getStackEntities() ) {
+            if (!entityStackManager.isStackedAndLoaded(stack.getEntity().getUniqueId())) {
+                entityStackManager.addLegacyColdStack(stack.getEntity().getUniqueId(), stack.getSize());
                 continue;
             }
         }
