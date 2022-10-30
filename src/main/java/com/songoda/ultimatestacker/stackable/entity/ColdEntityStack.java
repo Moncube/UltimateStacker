@@ -9,11 +9,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 
-import java.util.Deque;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.stream.Collectors;
 
@@ -176,7 +172,7 @@ public class ColdEntityStack implements Stackable {
         CustomEntity customEntity = plugin.getCustomEntityManager().getCustomEntity(entity);
         if (customEntity != null)
             nbtEntity.set(customEntity.getPluginName() + "_UltimateStacker", customEntity.getNBTIdentifier(entity));
-        return new StackedEntity(uuid, nbtEntity.serialize("Attributes"));
+        return new StackedEntity(uuid, nbtEntity.serialize("Attributes", "UUID"));
     }
 
     public int getId() {
