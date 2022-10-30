@@ -90,7 +90,7 @@
 
     <repositories>
 
-        <!--<repository>
+        <!-- <repository>
             <id>songoda-public</id>
             <url>https://repo.songoda.com/repository/public/</url>
         </repository> -->
@@ -132,7 +132,10 @@
             <groupId>com.songoda</groupId>
             <artifactId>SongodaCore</artifactId>
             <version>2.6.17-SNAPSHOT</version>
-            <scope>compile</scope>
+            <!--<scope>system</scope>
+            <systemPath>${project.basedir}/libs/SongodaCore-2.6.17-SNAPSHOT.jar</systemPath> -->
+            <!-- mvn install:install-file -Dfile=C:\Users\Math\IdeaProjects\UltimateStacker\libs\SongodaCore-2.6.16.jar -DgroupId=com.songoda -DartifactId=SongodaCore -Dversion=2.6.16 -Dpackaging=jar -->
+
         </dependency>
 
 
