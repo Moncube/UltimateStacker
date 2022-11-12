@@ -12,10 +12,7 @@ import com.songoda.ultimatestacker.stackable.entity.EntityStackManager;
 import com.songoda.ultimatestacker.stackable.entity.StackedEntity;
 import com.songoda.ultimatestacker.stackable.entity.custom.CustomEntity;
 import com.songoda.ultimatestacker.utils.CachedChunk;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.AbstractHorse;
 import org.bukkit.entity.Ageable;
@@ -45,6 +42,8 @@ import org.bukkit.entity.Wolf;
 import org.bukkit.entity.Zombie;
 import org.bukkit.inventory.EntityEquipment;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.util.RayTraceResult;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -235,6 +234,18 @@ public class StackingTask extends BukkitRunnable {
             // Check to see if entity is not stackable.
             if (!isEntityStackable(entity))
                 continue;
+            //PapiCapi
+            try {
+                double distanceSquared = livingEntity.getLocation().distanceSquared(entity.getLocation());
+                if ( distanceSquared > 1 && isSeparatedByWallSync(livingEntity, entity).get()) { //entities on the same block don't stack
+                    continue;
+                }
+            } catch (ExecutionException | InterruptedException e) {
+                e.printStackTrace();
+                continue;
+            }
+            //PapiCapi end
+
             // Add this entity to our stackable friends.
             stackableFriends.add(entity);
         }
@@ -754,5 +765,33 @@ public class StackingTask extends BukkitRunnable {
             default:
                 return false;
         }
+    }
+
+
+    public Future<Boolean> isSeparatedByWallSync(Entity entity, Entity target) {
+
+        CompletableFuture<Boolean> future = new CompletableFuture<>();
+
+        World world = entity.getWorld();
+        Vector vector = target.getLocation().toVector().subtract(entity.getLocation().toVector());
+
+        Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
+            RayTraceResult result = null;
+            try {
+                result = world.rayTrace(entity.getLocation(), vector, searchRadius, FluidCollisionMode.NEVER, true, 1, e -> e.equals(target));
+            } catch (IllegalArgumentException e) { //the entities are at the same location
+                future.complete(false);
+                return;
+            }
+
+            if ( result == null || result.getHitEntity() == null ) {
+                future.complete(true);
+            } else {
+                future.complete(result.getHitEntity() != target);
+            }
+        });
+
+
+        return future;
     }
 }

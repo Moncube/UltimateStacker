@@ -1,6 +1,5 @@
 package com.songoda.ultimatestacker.stackable.entity;
 
-import com.google.common.base.Throwables;
 import com.songoda.core.compatibility.ServerVersion;
 import com.songoda.core.lootables.loot.Drop;
 import com.songoda.core.lootables.loot.DropUtils;
@@ -14,7 +13,6 @@ import org.bukkit.entity.ExperienceOrb;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityDeathEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
