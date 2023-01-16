@@ -62,7 +62,7 @@ public class EntityStack extends ColdEntityStack {
             List<StackedEntity> stackedEntities = new ArrayList<>();
             for (int i = 0; i < createDuplicates; i++)
                 stackedEntities.add(addEntityToStackSilently(getStackedEntity(hostEntity, true)));
-            plugin.getDataManager().createStackedEntities(this, stackedEntities);
+            //plugin.getDataManager().createStackedEntities(this, stackedEntities);
 
             createDuplicates = 0;
         }
@@ -83,7 +83,7 @@ public class EntityStack extends ColdEntityStack {
             List<StackedEntity> stackedEntities = new ArrayList<>();
             for (int i = 0; i < createDuplicates; i++)
                 stackedEntities.add(addEntityToStackSilently(getStackedEntity(hostEntity, true)));
-            plugin.getDataManager().createStackedEntitiesSync(this, stackedEntities);
+            //plugin.getDataManager().createStackedEntitiesSync(this, stackedEntities);
 
             createDuplicates = 0;
         }
@@ -116,7 +116,7 @@ public class EntityStack extends ColdEntityStack {
     }
 
     private void handleWholeStackDeath(LivingEntity killed, List<Drop> drops, boolean custom, int droppedExp, EntityDeathEvent event) {
-        plugin.getDataManager().deleteHost(this);
+        //plugin.getDataManager().deleteHost(this);
 
         Location killedLocation = killed.getLocation();
         List<Drop> preStackedDrops = new ArrayList<>();

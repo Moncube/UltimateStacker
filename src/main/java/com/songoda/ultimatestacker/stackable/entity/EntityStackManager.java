@@ -37,7 +37,7 @@ public class EntityStackManager {
     public EntityStack addStack(LivingEntity entity) {
         if (entity == null) return null;
         EntityStack stack = new EntityStack(entity);
-        plugin.getDataManager().createHostEntity(stack);
+        //plugin.getDataManager().createHostEntity(stack);
         stacks.put(entity.getUniqueId(), stack);
         return stack;
     }
@@ -45,10 +45,10 @@ public class EntityStackManager {
     public EntityStack addStack(LivingEntity entity, int amount) {
         if (entity == null) return null;
         EntityStack stack = new EntityStack(entity);
-        plugin.getDataManager().createHostEntity(stack);
+        //plugin.getDataManager().createHostEntity(stack);
         stacks.put(entity.getUniqueId(), stack);
         stack.createDuplicates(amount - 1);
-        plugin.getDataManager().updateHost(stack);
+        //plugin.getDataManager().updateHost(stack);
         stack.updateStack();
         return stack;
     }
@@ -88,7 +88,7 @@ public class EntityStackManager {
     public EntityStack removeStack(UUID uuid) {
         EntityStack stack = stacks.remove(uuid);
         if (stack != null) {
-            plugin.getDataManager().deleteHost(stack);
+            //plugin.getDataManager().deleteHost(stack);
             stack.destroy();
         }
 
@@ -104,7 +104,7 @@ public class EntityStackManager {
         if (stack == null) return null;
         stack.setHostEntity(newEntity);
         stacks.put(newEntity.getUniqueId(), stack);
-        plugin.getDataManager().updateHost(stack);
+        //plugin.getDataManager().updateHost(stack);
         return stack;
     }
     
@@ -113,7 +113,7 @@ public class EntityStackManager {
         if (stack == null) return null;
         stack.setHostEntity(newEntity);
         stacks.put(newEntity.getUniqueId(), stack);
-        plugin.getDataManager().updateHostSync(stack);
+        //plugin.getDataManager().updateHostSync(stack);
         return stack;
     }
 
@@ -146,7 +146,7 @@ public class EntityStackManager {
         }
         stack.updateStack();
         stacks.put(entity.getUniqueId(), stack);
-        plugin.getDataManager().updateHost(coldStack);
+        //plugin.getDataManager().updateHost(coldStack);
     }
 
     public void unloadStack(LivingEntity entity) {
@@ -164,9 +164,9 @@ public class EntityStackManager {
 
     public ColdEntityStack addLegacyColdStack(UUID entity, int amount) {
         ColdEntityStack stack = new ColdEntityStack(entity);
-        plugin.getDataManager().createHostEntity(stack);
+        //plugin.getDataManager().createHostEntity(stack);
         stack.createDuplicates(amount - 1);
-        plugin.getDataManager().updateHost(stack);
+        //plugin.getDataManager().updateHost(stack);
         coldStacks.put(entity, stack);
         return stack;
     }

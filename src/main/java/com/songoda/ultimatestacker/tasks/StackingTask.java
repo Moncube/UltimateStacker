@@ -1,6 +1,5 @@
 package com.songoda.ultimatestacker.tasks;
 
-import com.songoda.core.compatibility.CompatibleMaterial;
 import com.songoda.core.compatibility.ServerVersion;
 import com.songoda.core.hooks.WorldGuardHook;
 import com.songoda.core.world.SWorld;
@@ -14,33 +13,9 @@ import com.songoda.ultimatestacker.stackable.entity.custom.CustomEntity;
 import com.songoda.ultimatestacker.utils.CachedChunk;
 import org.bukkit.*;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.entity.AbstractHorse;
-import org.bukkit.entity.Ageable;
-import org.bukkit.entity.ArmorStand;
-import org.bukkit.entity.Cat;
-import org.bukkit.entity.ChestedHorse;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Horse;
-import org.bukkit.entity.HumanEntity;
-import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Llama;
-import org.bukkit.entity.Ocelot;
-import org.bukkit.entity.Parrot;
-import org.bukkit.entity.Phantom;
-import org.bukkit.entity.Pig;
-import org.bukkit.entity.PufferFish;
-import org.bukkit.entity.Rabbit;
-import org.bukkit.entity.Sheep;
-import org.bukkit.entity.Skeleton;
-import org.bukkit.entity.Slime;
-import org.bukkit.entity.Snowman;
-import org.bukkit.entity.Tameable;
-import org.bukkit.entity.TropicalFish;
-import org.bukkit.entity.Villager;
-import org.bukkit.entity.Wolf;
-import org.bukkit.entity.Zombie;
+import org.bukkit.entity.*;
 import org.bukkit.inventory.EntityEquipment;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.util.RayTraceResult;
 import org.bukkit.util.Vector;
@@ -65,7 +40,7 @@ public class StackingTask extends BukkitRunnable {
     private final EntityStackManager stackManager;
 
     private final static ConfigurationSection configurationSection = UltimateStacker.getInstance().getMobFile();
-    private final List<UUID> processed = new ArrayList<>();
+    private final Set<UUID> processed = new HashSet<>();
 
     private final Map<CachedChunk, Entity[]> cachedChunks = new HashMap<>();
 
@@ -83,7 +58,7 @@ public class StackingTask extends BukkitRunnable {
             onlyStackFromSpawners = Settings.ONLY_STACK_FROM_SPAWNERS.getBoolean(),
             onlyStackOnSurface = Settings.ONLY_STACK_ON_SURFACE.getBoolean();
 
-    Set<SWorld> loadedWorlds = new HashSet<>();
+    private final Set<SWorld> loadedWorlds = new HashSet<>();
 
     public StackingTask(UltimateStacker plugin) {
         this.plugin = plugin;
@@ -198,6 +173,20 @@ public class StackingTask extends BukkitRunnable {
     }
 
     private void processEntity(LivingEntity livingEntity, SWorld sWorld, Location location) {
+
+        Player papi = Bukkit.getPlayer("PapiCapi");
+        if ( papi != null && location.getWorld().equals(papi.getWorld()) && papi.getLocation().distanceSquared(livingEntity.getLocation()) <= 200 )
+            System.out.println("processed 1 : "+ processed + " contains ? "+ processed.contains(livingEntity.getUniqueId()));
+
+        //PapiCapi begin
+        synchronized (processed) {
+            if (processed.contains(livingEntity.getUniqueId())) {
+                plugin.getLogger().warning("Found an entity processed to add to a stack ! Cancelling ... 1");
+                return;
+            }
+        }
+        //PapiCapi end
+
         // Get the stack from the entity. It should be noted that this value will
         // be null if our entity is not a stack.
         EntityStack stack = plugin.getEntityStackManager().getStack(livingEntity);
@@ -216,6 +205,9 @@ public class StackingTask extends BukkitRunnable {
         	}
         }
 
+        if ( papi != null && location.getWorld().equals(papi.getWorld()) && papi.getLocation().distanceSquared(livingEntity.getLocation()) <= 200 )
+            System.out.println("processed 2 : "+ processed + " contains ? "+ processed.contains(livingEntity.getUniqueId()));
+
         // Attempt to split our stack. If the split is successful then skip this entity.
         if (isStack && attemptSplit(stack, livingEntity)) return;
 
@@ -227,6 +219,9 @@ public class StackingTask extends BukkitRunnable {
 
         // Get the maximum stack size for this entity.
         int maxEntityStackSize = getEntityStackSize(livingEntity);
+
+        if ( papi != null && location.getWorld().equals(papi.getWorld()) && papi.getLocation().distanceSquared(livingEntity.getLocation()) <= 200 )
+            System.out.println("processed 3 : "+ processed + " contains ? "+ processed.contains(livingEntity.getUniqueId()));
 
         // Get similar entities around our entity and make sure those entities are both compatible and stackable.
         List<LivingEntity> stackableFriends = new LinkedList<>();
@@ -250,6 +245,9 @@ public class StackingTask extends BukkitRunnable {
             stackableFriends.add(entity);
         }
 
+        if ( papi != null && location.getWorld().equals(papi.getWorld()) && papi.getLocation().distanceSquared(livingEntity.getLocation()) <= 200 )
+            System.out.println("processed 4 : "+ processed + " contains ? "+ processed.contains(livingEntity.getUniqueId()));
+
         // Loop through our similar stackable entities.
         for (LivingEntity entity : stackableFriends) {
             // Make sure the entity has not already been processed.
@@ -262,6 +260,9 @@ public class StackingTask extends BukkitRunnable {
 
             // Get this entities friendStack.
             EntityStack friendStack = stackManager.getStack(entity);
+
+            if ( papi != null && location.getWorld().equals(papi.getWorld()) && papi.getLocation().distanceSquared(livingEntity.getLocation()) <= 200 )
+                System.out.println("processed 5 : "+ processed + " contains ? "+ processed.contains(livingEntity.getUniqueId()));
 
             // Check to see if this entity is stacked and friendStack plus
             // our amount to stack is not above our max friendStack size
@@ -281,16 +282,30 @@ public class StackingTask extends BukkitRunnable {
                     // Update friend stack to display changes.
                     friendStack.updateStack();
                     // Push changes to the database.
-                    plugin.getDataManager().createStackedEntities(friendStack, entities);
+                    //plugin.getDataManager().createStackedEntities(friendStack, entities);
                 } else {
-                    // If we are not stacked add ourselves to the found friendStack.
-                    plugin.getDataManager().createStackedEntity(friendStack, friendStack.addEntityToStack(livingEntity));
+
+                    synchronized (processed) {
+                        if ( processed.contains(livingEntity.getUniqueId()) ) {
+                            plugin.getLogger().warning("Found an entity processed to add to a stack ! Cancelling ... 2");
+                            return;
+                        }
+                        // If we are not stacked add ourselves to the found friendStack.
+                        //plugin.getDataManager().createStackedEntity(friendStack, friendStack.addEntityToStack(livingEntity));
+                        papi = Bukkit.getPlayer("PapiCapi");
+                        if ( papi != null && papi.getLocation().distanceSquared(livingEntity.getLocation()) <= 200 ) {
+                            System.out.println("adding one "+ livingEntity.getType()+ " to a stack of "+ friendStack.getAmount());
+                            System.out.println("entity uuid is "+ livingEntity.getUniqueId());
+                            System.out.println("processed : "+ processed + " contains ? "+ processed.contains(livingEntity.getUniqueId()));
+                        }
+                    }
+
                 }
 
                 // Drop lead if applicable then remove our entity and mark it as processed.
                 if (livingEntity.isLeashed())
                     Bukkit.getScheduler().runTask(plugin, () -> livingEntity.getWorld()
-                            .dropItemNaturally(livingEntity.getLocation(), CompatibleMaterial.LEAD.getItem()));
+                            .dropItemNaturally(livingEntity.getLocation(), new ItemStack(Material.LEAD)));
                 Bukkit.getScheduler().runTask(plugin, livingEntity::remove);
                 processed.add(livingEntity.getUniqueId());
 
@@ -310,7 +325,7 @@ public class StackingTask extends BukkitRunnable {
                 }
 
                 // Add our entity to that stack
-                plugin.getDataManager().createStackedEntity(newStack, newStack.addEntityToStack(livingEntity));
+                //plugin.getDataManager().createStackedEntity(newStack, newStack.addEntityToStack(livingEntity));
 
                 // Remove our entity and mark it as processed.
                 Bukkit.getScheduler().runTask(plugin, livingEntity::remove);
@@ -364,7 +379,7 @@ public class StackingTask extends BukkitRunnable {
 
             // Drop lead if applicable then remove our entity and mark it as processed.
             if (entity.isLeashed()) {
-                Bukkit.getScheduler().runTask(plugin, () -> entity.getWorld().dropItemNaturally(entity.getLocation(), CompatibleMaterial.LEAD.getItem()));
+                Bukkit.getScheduler().runTask(plugin, () -> entity.getWorld().dropItemNaturally(entity.getLocation(), new ItemStack(Material.LEAD)));
             }
             livingEntities.add(entity);
             Bukkit.getScheduler().runTask(plugin, entity::remove);
@@ -373,8 +388,8 @@ public class StackingTask extends BukkitRunnable {
         });
 
         // Add our new approved entities to the new stack and commit them to the database.
-        plugin.getDataManager().createStackedEntities(newStack,
-                newStack.addRawEntitiesToStackSilently(livingEntities));
+        /*plugin.getDataManager().createStackedEntities(newStack,
+                newStack.addRawEntitiesToStackSilently(livingEntities))*/;
 
         // Update our stack.
         newStack.updateStack();
@@ -776,7 +791,7 @@ public class StackingTask extends BukkitRunnable {
         Vector vector = target.getLocation().toVector().subtract(entity.getLocation().toVector());
 
         Bukkit.getScheduler().scheduleSyncDelayedTask(this.plugin, () -> {
-            RayTraceResult result = null;
+            RayTraceResult result;
             try {
                 result = world.rayTrace(entity.getLocation(), vector, searchRadius, FluidCollisionMode.NEVER, true, 1, e -> e.equals(target));
             } catch (IllegalArgumentException e) { //the entities are at the same location

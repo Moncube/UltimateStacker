@@ -1,9 +1,9 @@
 package com.songoda.ultimatestacker.listeners.item;
 
-import com.songoda.core.compatibility.CompatibleSound;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.utils.Methods;
+import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
@@ -26,7 +26,7 @@ public class ItemLegacyListener implements Listener {
         if (amount < (stack.getMaxStackSize() / 2)) return;
         event.setCancelled(true);
 
-        event.getPlayer().playSound(event.getPlayer().getLocation(), CompatibleSound.ENTITY_ITEM_PICKUP.getSound(), .2f, (float) (1 + Math.random()));
+        event.getPlayer().playSound(event.getPlayer().getLocation(), Sound.ENTITY_ITEM_PICKUP, .2f, (float) (1 + Math.random()));
 
         Methods.updateInventory(event.getItem(), event.getPlayer().getInventory());
     }

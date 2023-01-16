@@ -1,11 +1,10 @@
 package com.songoda.ultimatestacker.utils;
 
-import com.songoda.core.compatibility.CompatibleMaterial;
-import com.songoda.core.third_party.de.tr7zw.nbtapi.NBTItem;
 import com.songoda.core.utils.TextUtils;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.stackable.entity.custom.CustomEntity;
+import de.tr7zw.nbtapi.NBTItem;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.CreatureSpawner;
@@ -128,7 +127,7 @@ public class Methods {
     }
 
     public static ItemStack getSpawnerItem(EntityType entityType, int amount) {
-        ItemStack item = CompatibleMaterial.SPAWNER.getItem();
+        ItemStack item = new ItemStack(Material.SPAWNER);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(Methods.compileSpawnerName(entityType, amount));
         CreatureSpawner cs = (CreatureSpawner) ((BlockStateMeta) meta).getBlockState();

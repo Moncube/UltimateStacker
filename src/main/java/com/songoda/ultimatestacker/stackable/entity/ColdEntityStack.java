@@ -1,7 +1,7 @@
 package com.songoda.ultimatestacker.stackable.entity;
 
-import com.songoda.core.nms.NmsManager;
-import com.songoda.core.nms.nbt.NBTEntity;
+import com.songoda.core.nms.NBTCoreImpl;
+import com.songoda.core.nms.NBTEntityImpl;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.stackable.entity.custom.CustomEntity;
 import com.songoda.ultimatestacker.utils.Stackable;
@@ -67,7 +67,7 @@ public class ColdEntityStack implements Stackable {
     public void moveEntitiesFromStack(EntityStack stack, int amount) {
         List<StackedEntity> stackedEntities = stack.takeEntities(amount);
         this.stackedEntities.addAll(stackedEntities);
-        plugin.getDataManager().createStackedEntities(this, stackedEntities);
+        //plugin.getDataManager().createStackedEntities(this, stackedEntities);
     }
 
     public List<StackedEntity> takeEntities(int amount) {
@@ -77,7 +77,7 @@ public class ColdEntityStack implements Stackable {
             if (entity != null)
                 entities.add(entity);
         }
-        plugin.getDataManager().deleteStackedEntities(entities);
+        //plugin.getDataManager().deleteStackedEntities(entities);
         return entities;
     }
 
@@ -89,7 +89,7 @@ public class ColdEntityStack implements Stackable {
 
     public LivingEntity takeOneAndSpawnEntity(Location location) {
         if (stackedEntities.isEmpty()) return null;
-        NBTEntity nbtEntity = NmsManager.getNbt().newEntity();
+        NBTEntityImpl nbtEntity = NBTCoreImpl.newEntity();
         nbtEntity.deSerialize(stackedEntities.getFirst().getSerializedEntity());
 
         for (CustomEntity customEntity : plugin.getCustomEntityManager().getRegisteredCustomEntities()) {
@@ -98,7 +98,7 @@ public class ColdEntityStack implements Stackable {
             LivingEntity entity = customEntity.spawnFromIdentifier(nbtEntity.getString(identifier), location);
             if (entity == null) continue;
             stackedEntities.removeFirst();
-            plugin.getDataManager().deleteStackedEntity(entity.getUniqueId());
+            //plugin.getDataManager().deleteStackedEntity(entity.getUniqueId());
             return entity;
         }
 
@@ -108,19 +108,19 @@ public class ColdEntityStack implements Stackable {
 
             if (newEntity != null) {
                 stackedEntities.removeFirst();
-                plugin.getDataManager().deleteStackedEntity(newEntity.getUniqueId());
+                //plugin.getDataManager().deleteStackedEntity(newEntity.getUniqueId());
                 break;
             }
         }
-        if (newEntity == null)
-            plugin.getDataManager().deleteStackedEntity(hostUniqueId);
+        //if (newEntity == null)
+            //plugin.getDataManager().deleteStackedEntity(hostUniqueId);
 
         return newEntity;
     }
     
     public LivingEntity takeOneAndSpawnEntitySync(Location location) {
         if (stackedEntities.isEmpty()) return null;
-        NBTEntity nbtEntity = NmsManager.getNbt().newEntity();
+        NBTEntityImpl nbtEntity = NBTCoreImpl.newEntity();
         nbtEntity.deSerialize(stackedEntities.getFirst().getSerializedEntity());
 
         for (CustomEntity customEntity : plugin.getCustomEntityManager().getRegisteredCustomEntities()) {
@@ -129,13 +129,13 @@ public class ColdEntityStack implements Stackable {
             LivingEntity entity = customEntity.spawnFromIdentifier(nbtEntity.getString(identifier), location);
             if (entity == null) continue;
             stackedEntities.removeFirst();
-            plugin.getDataManager().deleteStackedEntitySync(entity.getUniqueId());
+            //plugin.getDataManager().deleteStackedEntitySync(entity.getUniqueId());
             return entity;
         }
 
         LivingEntity newEntity = (LivingEntity) nbtEntity.spawn(location);
         stackedEntities.removeFirst();
-        plugin.getDataManager().deleteStackedEntitySync(newEntity.getUniqueId());
+        //plugin.getDataManager().deleteStackedEntitySync(newEntity.getUniqueId());
 
         return newEntity;
     }
@@ -163,8 +163,12 @@ public class ColdEntityStack implements Stackable {
     }
 
     protected StackedEntity getStackedEntity(Entity entity, boolean newUUID) {
+        if ( entity == null ) {
+            System.out.println("entity is null ");
+            return null;
+        }
         UUID uuid = entity.getUniqueId();
-        NBTEntity nbtEntity = NmsManager.getNbt().of(entity);
+        NBTEntityImpl nbtEntity = NBTCoreImpl.of(entity);
         if (newUUID) {
             uuid = UUID.randomUUID();
             nbtEntity.set("UUID", uuid);

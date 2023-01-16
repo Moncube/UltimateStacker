@@ -1,6 +1,5 @@
 package com.songoda.ultimatestacker.listeners;
 
-import com.songoda.core.compatibility.ServerProject;
 import com.songoda.core.compatibility.ServerVersion;
 import com.songoda.core.lootables.loot.Drop;
 import com.songoda.core.lootables.loot.DropUtils;
@@ -159,7 +158,7 @@ public class DeathListeners implements Listener {
         if (Settings.KILL_WHOLE_STACK_ON_DEATH.getBoolean() && Settings.REALISTIC_DAMAGE.getBoolean() && !player.getGameMode().equals(GameMode.CREATIVE)) {
             ItemStack tool = player.getInventory().getItemInHand();
             if (tool.getType().getMaxDurability() < 1 || (tool.getItemMeta() != null && (tool.getItemMeta().isUnbreakable()
-                    || (ServerProject.isServer(ServerProject.SPIGOT, ServerProject.PAPER) && tool.getItemMeta().isUnbreakable()))))
+                    || tool.getItemMeta().isUnbreakable())))
                 return;
 
             int unbreakingLevel = tool.getEnchantmentLevel(Enchantment.DURABILITY);

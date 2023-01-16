@@ -1,12 +1,9 @@
 package com.songoda.ultimatestacker.listeners.entity;
 
-import com.songoda.core.compatibility.CompatibleMaterial;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.stackable.entity.EntityStack;
 import com.songoda.ultimatestacker.stackable.entity.EntityStackManager;
-import com.songoda.ultimatestacker.stackable.spawner.SpawnerStack;
-import com.songoda.ultimatestacker.utils.Methods;
 import com.songoda.ultimatestacker.utils.Paire;
 
 import world.bentobox.bentobox.BentoBox;
@@ -17,14 +14,11 @@ import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.block.CreatureSpawner;
 import org.bukkit.enchantments.Enchantment;
-import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -111,16 +105,16 @@ public class EntityListeners implements Listener {
         List<Block> toCancel = new ArrayList<>();
         while (it.hasNext()) {
             Block block = it.next();
-            if (block.getType() != CompatibleMaterial.SPAWNER.getMaterial())
+            if (block.getType() != Material.SPAWNER)
                 continue;
 
             Location spawnLocation = block.getLocation();
 
-            SpawnerStack spawner = plugin.getSpawnerStackManager().getSpawner(block);
+            //SpawnerStack spawner = plugin.getSpawnerStackManager().getSpawner(block);
 
             if (Settings.SPAWNERS_DONT_EXPLODE.getBoolean())
                 toCancel.add(block);
-            else {
+            /*else {
                 String chance = "";
                 if (event.getEntity() instanceof Creeper)
                     chance = Settings.EXPLOSION_DROP_CHANCE_TNT.getString();
@@ -138,7 +132,7 @@ public class EntityListeners implements Listener {
                     plugin.getDataManager().deleteSpawner(spawnerStack);
                     plugin.removeHologram(spawnerStack);
                 }
-            }
+            }*/
 
             Location nloc = spawnLocation.clone();
             nloc.add(.5, -.4, .5);

@@ -1,9 +1,9 @@
 package com.songoda.ultimatestacker.listeners.item;
 
-import com.songoda.core.compatibility.CompatibleSound;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.utils.Methods;
+import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
@@ -29,7 +29,7 @@ public class ItemCurrentListener implements Listener {
             if (amount < (stack.getMaxStackSize() / 2)) return;
             event.setCancelled(true);
             Player player = (Player) event.getEntity();
-            player.playSound(player.getLocation(), CompatibleSound.ENTITY_ITEM_PICKUP.getSound(), .2f, (float) (1 + Math.random()));
+            player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, .2f, (float) (1 + Math.random()));
             Methods.updateInventory(event.getItem(), player.getInventory());
         } else {
             UltimateStacker.updateItemMeta(item, stack, amount - 1);

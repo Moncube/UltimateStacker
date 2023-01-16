@@ -1,33 +1,15 @@
 package com.songoda.ultimatestacker.listeners;
 
-import com.songoda.core.compatibility.CompatibleHand;
-import com.songoda.core.compatibility.ServerVersion;
-import com.songoda.core.nms.NmsManager;
-import com.songoda.core.third_party.de.tr7zw.nbtapi.NBTItem;
-import com.songoda.core.utils.EntityUtils;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
-import com.songoda.ultimatestacker.stackable.spawner.SpawnerStack;
-import com.songoda.ultimatestacker.stackable.spawner.SpawnerStackManager;
 import com.songoda.ultimatestacker.utils.Paire;
 
 import org.bukkit.Bukkit;
-import org.bukkit.GameMode;
 import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.Block;
-import org.bukkit.block.CreatureSpawner;
-import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.SpawnerSpawnEvent;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.material.SpawnEgg;
-import org.bukkit.metadata.FixedMetadataValue;
 
 public class SpawnerListeners implements Listener {
 
@@ -86,6 +68,7 @@ public class SpawnerListeners implements Listener {
     	}
     }
 
+    /*
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void PlayerInteractEventEgg(PlayerInteractEvent event) {
         if (!plugin.spawnersEnabled()
@@ -121,19 +104,9 @@ public class SpawnerListeners implements Listener {
         int stackSize = spawner.getAmount();
         int amt = player.getInventory().getItemInHand().getAmount();
 
-        EntityType entityType;
-        if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13))
-            entityType = EntityType.valueOf(itemType.name().replace("_SPAWN_EGG", "")
+        EntityType entityType = EntityType.valueOf(itemType.name().replace("_SPAWN_EGG", "")
                     .replace("MOOSHROOM", "MUSHROOM_COW")
                     .replace("ZOMBIE_PIGMAN", "PIG_ZOMBIE"));
-        else if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_12)) {
-            String str = NmsManager.getNbt().of(event.getItem()).toString();
-            if (str.contains("minecraft:"))
-                entityType = EntityType.fromName(str.substring(str.indexOf("minecraft:") + 10, str.indexOf("\"}")));
-            else
-                entityType = EntityType.fromName(str.substring(str.indexOf("EntityTag:{id:") + 15, str.indexOf("\"}")));
-        } else
-            entityType = ((SpawnEgg) event.getItem().getData()).getSpawnedType();
 
         if (!player.hasPermission("ultimatestacker.egg." + entityType.name())) {
             event.setCancelled(true);
@@ -160,7 +133,12 @@ public class SpawnerListeners implements Listener {
         creatureSpawner.update();
 
         plugin.updateHologram(spawner);
-        if (player.getGameMode() != GameMode.CREATIVE)
-            CompatibleHand.getHand(event).takeItem(player, stackSize);
+        if (player.getGameMode() != GameMode.CREATIVE && event.getHand() != null) {
+            //CompatibleHand.getHand(event).takeItem(player, stackSize);
+            ItemStack item = player.getInventory().getItem(event.getHand());
+            item.setAmount(item.getAmount()-stackSize);
+        }
     }
+     */
+
 }

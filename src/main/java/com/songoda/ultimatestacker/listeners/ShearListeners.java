@@ -1,6 +1,5 @@
 package com.songoda.ultimatestacker.listeners;
 
-import com.songoda.core.compatibility.CompatibleMaterial;
 import com.songoda.core.compatibility.ServerVersion;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
@@ -89,17 +88,17 @@ public class ShearListeners implements Listener {
 
         switch (entity.getType()) {
             case SHEEP:
-                itemStack = new ItemStack(CompatibleMaterial.WHITE_WOOL.getMaterial());
+                itemStack = new ItemStack(Material.WHITE_WOOL);
                 if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13))
                     itemStack.setType(Material.valueOf(((Sheep) entity).getColor() + "_WOOL"));
                 else
                     itemStack.setDurability((short) ((Sheep) entity).getColor().getWoolData());
                 break;
             case MUSHROOM_COW:
-                itemStack = new ItemStack(CompatibleMaterial.RED_MUSHROOM.getMaterial(), 5);
+                itemStack = new ItemStack(Material.RED_MUSHROOM, 5);
                 if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_14)
                         && ((MushroomCow) entity).getVariant() == MushroomCow.Variant.BROWN)
-                    itemStack.setType(CompatibleMaterial.BROWN_MUSHROOM.getMaterial());
+                    itemStack.setType(Material.BROWN_MUSHROOM);
                 break;
         }
         return itemStack;
