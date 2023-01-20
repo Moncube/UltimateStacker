@@ -1,13 +1,13 @@
 package com.songoda.core.nms;
 
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_19_R2.CraftWorld;
 
 import java.util.Optional;
 
@@ -20,7 +20,6 @@ public class NBTEntityImpl extends NBTCompoundImpl {
         this.nmsEntity = nmsEntity;
     }
 
-    @Override
     public org.bukkit.entity.Entity spawn(Location location) {
         String entityType = getNBTObject("entity_type").asString();
 
@@ -32,7 +31,7 @@ public class NBTEntityImpl extends NBTCompoundImpl {
                     ((CraftWorld) location.getWorld()).getHandle(),
                     compound,
                     null,
-                    null,
+                    //null,
                     new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()),
                     MobSpawnType.COMMAND,
                     true,
@@ -52,7 +51,6 @@ public class NBTEntityImpl extends NBTCompoundImpl {
         return null;
     }
 
-    @Override
     public org.bukkit.entity.Entity reSpawn(Location location) {
         nmsEntity.discard();
         return spawn(location);
@@ -60,6 +58,7 @@ public class NBTEntityImpl extends NBTCompoundImpl {
 
     @Override
     public void addExtras() {
-        compound.putString("entity_type", Registry.ENTITY_TYPE.getKey(nmsEntity.getType()).toString());
+        //compound.putString("entity_type", Registry.ENTITY_TYPE.getKey(nmsEntity.getType()).toString());
+        compound.putString("entity_type", BuiltInRegistries.ENTITY_TYPE.getKey(nmsEntity.getType()).toString());
     }
 }

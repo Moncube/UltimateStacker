@@ -154,11 +154,11 @@ public class Loot {
         for (Map.Entry<String, Integer> entry : this.enchants.entrySet()) {
             if (entry.getValue() == null) continue;
 
-            if (entry.getKey().equalsIgnoreCase("RANDOM")) {
+            /*if (entry.getKey().equalsIgnoreCase("RANDOM")) {
                 item = ItemUtils.applyRandomEnchants(item, entry.getValue());
 
                 continue;
-            }
+            }*/
 
             enchants.put(Enchantment.getByName(entry.getKey()), entry.getValue());
         }

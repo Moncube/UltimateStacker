@@ -4,10 +4,11 @@ import com.songoda.core.utils.TextUtils;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.stackable.entity.custom.CustomEntity;
-import de.tr7zw.nbtapi.NBTItem;
+import net.minecraft.nbt.CompoundTag;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.CreatureSpawner;
+import org.bukkit.craftbukkit.v1_19_R2.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -135,9 +136,14 @@ public class Methods {
         ((BlockStateMeta) meta).setBlockState(cs);
         item.setItemMeta(meta);
 
-        NBTItem nbtItem = new NBTItem(item);
+        /*NBTItem nbtItem = new NBTItem(item);
         nbtItem.setInteger("spawner_stack_size", amount);
-        return nbtItem.getItem();
+        return nbtItem.getItem();*/
+        net.minecraft.world.item.ItemStack nbtItem = CraftItemStack.asNMSCopy(item);
+        CompoundTag compoundTag = nbtItem.hasTag() ? nbtItem.getTag() : new CompoundTag();
+        compoundTag.putInt("spawner_stack_size", amount);
+        nbtItem.setTag(compoundTag);
+        return CraftItemStack.asBukkitCopy(nbtItem);
     }
 
     public static boolean isInt(String number) {

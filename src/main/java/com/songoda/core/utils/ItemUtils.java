@@ -3,10 +3,15 @@ package com.songoda.core.utils;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.songoda.core.compatibility.ServerVersion;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.craftbukkit.v1_19_R2.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_19_R2.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -103,14 +108,16 @@ public class ItemUtils {
     }*/
 
 
-    public static ItemStack applyRandomEnchants(ItemStack item, int level) {
+    /*public static ItemStack applyRandomEnchants(ItemStack item, int level) {
         try {
-            Object nmsItemStack = methodAsNMSCopy.invoke(null, item);
+            //Object nmsItemStack = methodAsNMSCopy.invoke(null, item);
+            net.minecraft.world.item.ItemStack nmsItemStack = CraftItemStack.asNMSCopy(item);
+            EnchantmentHelper.storeEnchantment(RandomSource.createNewThreadLocalInstance().);
 
             /*if (ServerVersion.isServerVersion(ServerVersion.V1_8)) {
                 nmsItemStack = methodA.invoke(null, new Random(), nmsItemStack, level);
             } else {*/
-            nmsItemStack = methodA.invoke(null, new Random(), nmsItemStack, level, false);
+    /*        nmsItemStack = methodA.invoke(null, new Random(), nmsItemStack, level, false);
             //}
 
             item = (ItemStack) methodAsBukkitCopy.invoke(null, nmsItemStack);
@@ -119,7 +126,7 @@ public class ItemUtils {
         }
 
         return item;
-    }
+    }*/
 
     public static String itemStackArrayToBase64(ItemStack[] items) {
         try {
@@ -337,17 +344,15 @@ public class ItemUtils {
             return null;
         }
 
-        try {
-            Object craftPlayer = cb_CraftPlayer.cast(player);
+        /* Object craftPlayer = cb_CraftPlayer.cast(player);
 
-            Iterator<Property> iterator = ((GameProfile) cb_CraftPlayer_getProfile.invoke(craftPlayer)).getProperties().get("textures").iterator();
+        Iterator<Property> iterator = ((GameProfile) cb_CraftPlayer_getProfile.invoke(craftPlayer)).getProperties().get("textures").iterator();
+         */
 
-            return iterator.hasNext() ? iterator.next().getValue() : null;
-        } catch (IllegalAccessException | InvocationTargetException ex) {
-            ex.printStackTrace();
-        }
+        ServerPlayer playerNMS = ((CraftPlayer) player).getHandle();
+        Iterator<Property> iterator = playerNMS.getGameProfile().getProperties().get("textures").iterator();
 
-        return null;
+        return iterator.hasNext() ? iterator.next().getValue() : null;
     }
 
     public static String getSkullTexture(ItemStack item) {

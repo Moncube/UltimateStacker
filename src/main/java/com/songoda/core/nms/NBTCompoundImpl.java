@@ -1,7 +1,6 @@
 package com.songoda.core.nms;
 
 
-import com.songoda.core.nms.nbt.NBTObject;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtIo;
 

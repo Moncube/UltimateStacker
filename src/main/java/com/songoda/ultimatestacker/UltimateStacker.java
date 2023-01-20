@@ -10,7 +10,6 @@ import com.songoda.core.hooks.EntityStackerManager;
 import com.songoda.core.hooks.HologramManager;
 import com.songoda.core.hooks.WorldGuardHook;
 import com.songoda.core.utils.TextUtils;
-import com.songoda.ultimatestacker.commands.CommandConvert;
 import com.songoda.ultimatestacker.commands.CommandLootables;
 import com.songoda.ultimatestacker.commands.CommandMoncube;
 import com.songoda.ultimatestacker.commands.CommandReload;
@@ -35,7 +34,7 @@ import com.songoda.ultimatestacker.tasks.StackingTask;
 import com.songoda.ultimatestacker.utils.Methods;
 import com.songoda.ultimatestacker.utils.Paire;
 
-import org.apache.commons.text.WordUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -147,8 +146,8 @@ public class UltimateStacker extends SongodaPlugin {
                         new CommandRemoveAll(this),
                         new CommandReload(this),
                         new CommandSpawn(this),
-                        new CommandLootables(this),
-                        new CommandConvert( guiManager)
+                        new CommandLootables(this)
+                        //new CommandConvert( guiManager)
                 );
 
         this.lootablesManager = new LootablesManager();
@@ -169,7 +168,8 @@ public class UltimateStacker extends SongodaPlugin {
         for (Material value : Material.values()) {
             itemFile.addDefault("Items." + value.name() + ".Has Hologram", true);
             itemFile.addDefault("Items." + value.name() + ".Max Stack Size", -1);
-            itemFile.addDefault("Items." + value.name() + ".Display Name", WordUtils.capitalizeFully(value.name().toLowerCase().replace("_", " ")));
+            //itemFile.addDefault("Items." + value.name() + ".Display Name", WordUtils.capitalizeFully(value.name().toLowerCase().replace("_", " ")));
+            itemFile.addDefault("Items." + value.name() + ".Display Name", StringUtils.capitalize(value.name().toLowerCase().replace("_", " ")));
         }
         itemFile.load();
         itemFile.saveChanges();
@@ -358,6 +358,10 @@ public class UltimateStacker extends SongodaPlugin {
             this.stackingTask = new StackingTask(this);
             getServer().getPluginManager().registerEvents(new ChunkListeners(entityStackManager), this);
         });*/
+
+        entityStackManager.tryAndLoadColdEntities();
+        this.stackingTask = new StackingTask(this);
+        getServer().getPluginManager().registerEvents(new ChunkListeners(entityStackManager), this);
     
         final boolean useBlockHolo = Settings.BLOCK_HOLOGRAMS.getBoolean();
         
