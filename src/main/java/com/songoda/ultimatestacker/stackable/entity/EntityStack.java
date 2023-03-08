@@ -144,6 +144,8 @@ public class EntityStack extends ColdEntityStack {
         Vector velocity = killed.getVelocity().clone();
         killed.remove();
         LivingEntity newEntity = takeOneAndSpawnEntity(killed.getLocation());
+        if ( newEntity == null )
+            return;
 
         // In versions 1.14 and below experience is not dropping. Because of this we are doing this ourselves.
         if (ServerVersion.isServerVersionAtOrBelow(ServerVersion.V1_14)) {
