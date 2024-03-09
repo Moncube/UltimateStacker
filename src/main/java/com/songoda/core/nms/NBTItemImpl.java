@@ -3,7 +3,7 @@ package com.songoda.core.nms;
 
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import org.bukkit.craftbukkit.v1_19_R2.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack;
 
 public class NBTItemImpl extends NBTCompoundImpl {
     private final ItemStack nmsItem;

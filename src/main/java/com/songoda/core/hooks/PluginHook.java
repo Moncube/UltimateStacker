@@ -2,8 +2,8 @@ package com.songoda.core.hooks;
 
 import com.songoda.core.hooks.economies.Economy;
 import com.songoda.core.hooks.economies.VaultEconomy;
+import com.songoda.core.hooks.holograms.DecentHologramsHolograms;
 import com.songoda.core.hooks.holograms.Holograms;
-import com.songoda.core.hooks.holograms.HolographicDisplaysHolograms;
 import com.songoda.core.hooks.log.CoreProtectLog;
 import com.songoda.core.hooks.log.Log;
 import com.songoda.core.hooks.protection.BentoBoxProtection;
@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
 public final class PluginHook<T extends Class> {
     public static final PluginHook ECO_VAULT = new PluginHook(Economy.class, "Vault", VaultEconomy.class);
     public static final PluginHook STACKER_ULTIMATE = new PluginHook(Stacker.class, "UltimateStacker", UltimateStacker.class);
-    public static final PluginHook HOLO_DISPLAYS = new PluginHook(Holograms.class, "HolographicDisplays", HolographicDisplaysHolograms.class);
+    //public static final PluginHook HOLO_DISPLAYS = new PluginHook(Holograms.class, "HolographicDisplays", HolographicDisplaysHolograms.class);
+    public static final PluginHook HOLO_DECENTHOLOGRAMS =  new PluginHook(Holograms.class, "DecentHolograms", DecentHologramsHolograms.class);
     public static final PluginHook LOG_CORE_PROTECT = new PluginHook(Log.class, "CoreProtect", CoreProtectLog.class);
     public static final PluginHook PROTECTION_BENTOBOX = new PluginHook(Protection.class, "BentoBox", BentoBoxProtection.class);
 

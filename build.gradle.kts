@@ -7,38 +7,38 @@ plugins {
 group = "com.songoda"
 version = "1.0.0"
 
-java {
-    // Configure the java toolchain. This allows gradle to auto-provision JDK 17 on systems that only have JDK 8 installed for example.
-    toolchain.languageVersion.set(JavaLanguageVersion.of(17))
-}
 
 repositories {
     mavenCentral()
-    maven("https://repo.viaversion.com")
-    maven("https://repo.codemc.org/repository/maven-public/")
+    maven("https://repo.papermc.io/repository/maven-public/")
+
+    maven("https://repo.viaversion.com") // ViaVersion
+    maven("https://repo.codemc.org/repository/maven-public/") // BentoBox
     maven("https://maven.playpro.com")
-    maven("https://jitpack.io")
+    maven("https://jitpack.io") // DecentHolograms | Vault ?
     maven("https://maven.enginehub.org/repo/")
-    maven("https://repo.codemc.io/repository/maven-public/")
+    //maven("https://repo.codemc.io/repository/maven-public/")
     maven("https://mvn.lumine.io/repository/maven-public/")
 }
 
 dependencies {
-    paperDevBundle("1.19.3-R0.1-SNAPSHOT")
+    paperDevBundle("1.20.4-R0.1-SNAPSHOT")
 
     compileOnly("com.viaversion:viaversion-api:4.0.1")
-    compileOnly("world.bentobox:bentobox:1.20.0-SNAPSHOT")
-    compileOnly("net.coreprotect:coreprotect:21.3")
+    compileOnly("world.bentobox:bentobox:2.1.1-SNAPSHOT")
+    compileOnly("net.coreprotect:coreprotect:22.1")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         exclude("org.bukkit")
     }
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.4") {
         exclude("org.spigotmc")
     }
-    compileOnly("com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.9")
+    //compileOnly("com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.9")
     compileOnly("com.github.Zrips:Jobs:v4.17.2") //repo is jitpack
     compileOnly(files("libs/Clearlag.jar"))
     compileOnly("io.lumine:Mythic-Dist:4.13.0")
+
+    compileOnly("com.github.decentsoftware-eu:decentholograms:2.8.6")
 
 
     // paperweightDevBundle("com.example.paperfork", "1.18.1-R0.1-SNAPSHOT")

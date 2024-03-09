@@ -195,7 +195,7 @@ public class EntityStack extends ColdEntityStack {
     public void releaseHost() {
         LivingEntity oldHost = hostEntity;
         LivingEntity entity = takeOneAndSpawnEntity(hostEntity.getLocation());
-        if (!stackedEntities.isEmpty()) {
+        if (!stackedEntities.isEmpty() && entity != null) {
             destroy(false);
             plugin.getEntityStackManager().updateStack(oldHost, entity);
             entity.setVelocity(new Vector(ThreadLocalRandom.current().nextDouble(-1, 1.01),

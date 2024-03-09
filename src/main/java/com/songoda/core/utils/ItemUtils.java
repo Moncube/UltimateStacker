@@ -10,8 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.craftbukkit.v1_19_R2.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_19_R2.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer;
+import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -352,7 +352,7 @@ public class ItemUtils {
         ServerPlayer playerNMS = ((CraftPlayer) player).getHandle();
         Iterator<Property> iterator = playerNMS.getGameProfile().getProperties().get("textures").iterator();
 
-        return iterator.hasNext() ? iterator.next().getValue() : null;
+        return iterator.hasNext() ? iterator.next().value() : null;
     }
 
     public static String getSkullTexture(ItemStack item) {
@@ -368,7 +368,7 @@ public class ItemUtils {
             GameProfile profile = (GameProfile) cb_SkullMeta_profile.get(localSkullMeta);
             Iterator<Property> iterator = profile.getProperties().get("textures").iterator();
 
-            return iterator.hasNext() ? iterator.next().getValue() : null;
+            return iterator.hasNext() ? iterator.next().value() : null;
         } catch (NoSuchFieldException | IllegalArgumentException | IllegalAccessException ignore) {
         }
 

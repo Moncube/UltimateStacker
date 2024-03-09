@@ -2,6 +2,7 @@ package com.songoda.core.nms;
 
 
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtAccounter;
 import net.minecraft.nbt.NbtIo;
 
 import java.io.ByteArrayInputStream;
@@ -162,7 +163,7 @@ public class NBTCompoundImpl {
     public void deSerialize(byte[] serialized) {
         try (ByteArrayInputStream inputStream = new ByteArrayInputStream(serialized);
              ObjectInputStream dataInput = new ObjectInputStream(inputStream)) {
-            compound = NbtIo.readCompressed(dataInput);
+            compound = NbtIo.readCompressed(dataInput, NbtAccounter.unlimitedHeap());
         } catch (Exception ex) {
             ex.printStackTrace();
         }
