@@ -1,7 +1,6 @@
 package com.songoda.core.hooks.stackers;
 
-
-import com.songoda.ultimatestacker.stackable.entity.EntityStack;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStack;
 import com.songoda.ultimatestacker.utils.Methods;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
@@ -47,24 +46,24 @@ public class UltimateStacker extends Stacker {
 
     @Override
     public boolean isStacked(LivingEntity entity) {
-        return plugin.getEntityStackManager().isStackedAndLoaded(entity);
+        return plugin.getEntityStackManager().isStackedEntity(entity);
     }
 
     @Override
     public int getSize(LivingEntity entity) {
-        return isStacked(entity) ? plugin.getEntityStackManager().getStack(entity).getAmount() : 0;
+        return isStacked(entity) ? plugin.getEntityStackManager().getStackedEntity(entity).getAmount() : 0;
     }
 
     @Override
     public void remove(LivingEntity entity, int amount) {
-        EntityStack stack = plugin.getEntityStackManager().getStack(entity);
-        stack.takeEntities(amount);
-        stack.updateStack();
+        EntityStack stack = plugin.getEntityStackManager().getStackedEntity(entity);
+        stack.take(amount);
+        stack.updateNameTag();
     }
 
     @Override
     public void add(LivingEntity entity, int amount) {
-        plugin.getEntityStackManager().addStack(entity, amount);
+        plugin.getEntityStackManager().createStackedEntity(entity, amount);
     }
 
     @Override

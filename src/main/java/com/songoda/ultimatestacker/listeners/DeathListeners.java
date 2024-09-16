@@ -1,17 +1,19 @@
 package com.songoda.ultimatestacker.listeners;
 
+import com.songoda.core.compatibility.ServerProject;
 import com.songoda.core.compatibility.ServerVersion;
 import com.songoda.core.lootables.loot.Drop;
 import com.songoda.core.lootables.loot.DropUtils;
 import com.songoda.ultimatestacker.UltimateStacker;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStack;
 import com.songoda.ultimatestacker.settings.Settings;
-import com.songoda.ultimatestacker.stackable.entity.EntityStack;
+import com.songoda.ultimatestacker.stackable.entity.EntityStackImpl;
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.GameRule;
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.ChestedHorse;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
@@ -45,7 +47,7 @@ public class DeathListeners implements Listener {
 
     private final Map<UUID, List<ItemStack>> finalItems = new HashMap<>();
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler
     public void onEntityDamage(EntityDamageEvent event) {
         if (!(event.getEntity() instanceof LivingEntity))
             return;
@@ -56,33 +58,61 @@ public class DeathListeners implements Listener {
 
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler(priority = EventPriority.LOW)
     public void onEntityDeath(EntityDeathEvent event) {
         LivingEntity entity = event.getEntity();
+
+        if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13)
+                && !entity.getWorld().getGameRuleValue(GameRule.DO_MOB_LOOT)) {
+            return;
+        }
+
         if (event.getEntityType() == EntityType.PLAYER
                 || event.getEntityType() == EntityType.ARMOR_STAND) return;
+
+        //Respect MythicMobs
+        if (plugin.getCustomEntityManager().isCustomEntity(entity)) return;
 
         boolean custom = Settings.CUSTOM_DROPS.getBoolean();
         List<Drop> drops = custom ? plugin.getLootablesManager().getDrops(event.getEntity())
                 : event.getDrops().stream().map(Drop::new).collect(Collectors.toList());
 
-        if (custom) {
-            for (ItemStack item : new ArrayList<>(event.getDrops())) {
+        if (custom)
+            for (ItemStack item : new ArrayList<>(event.getDrops()))
                 if (shouldDrop(event.getEntity(), item.getType()))
                     drops.add(new Drop(item));
+
+        if (plugin.getCustomEntityManager().getCustomEntity(entity) == null) {
+            //Run commands here, or it will be buggy
+            runCommands(entity, drops);
+
+            if (plugin.getEntityStackManager().isStackedEntity(event.getEntity())) {
+                ((EntityStackImpl)plugin.getEntityStackManager().getStackedEntity(event.getEntity())).onDeath(entity, drops, custom, event.getDroppedExp(), event);
+            } else {
+                DropUtils.processStackedDrop(event.getEntity(), drops, event);
             }
         }
 
-        if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13)
-                && !entity.getWorld().getGameRuleValue(GameRule.DO_MOB_LOOT))
-            drops.clear();
-
-        if (plugin.getEntityStackManager().isStackedAndLoaded(event.getEntity()))
-            plugin.getEntityStackManager().getStack(event.getEntity())
-                    .onDeath(entity, drops, custom, event.getDroppedExp(), event);
-        else
-            DropUtils.processStackedDrop(event.getEntity(), drops, event);
         finalItems.remove(entity.getUniqueId());
+    }
+
+    private void runCommands(LivingEntity entity, List<Drop> drops) {
+        String lastDamage = plugin.getEntityStackManager().getLastPlayerDamage(entity);
+        if (lastDamage != null) {
+            List<String> commands = new ArrayList<>();
+            drops.forEach(drop -> {
+                if (drop.getCommand() != null) {
+                    String command = drop.getCommand().replace("%player%", lastDamage);
+                    drop.setCommand(null);
+                    commands.add(command);
+                }
+            });
+            Bukkit.getScheduler().runTask(plugin, () -> {
+                for (String command : commands) {
+                    Bukkit.dispatchCommand(Bukkit.getConsoleSender(), command);
+                }
+            });
+        }
     }
 
     private boolean shouldDrop(LivingEntity entity, Material material) {
@@ -150,18 +180,18 @@ public class DeathListeners implements Listener {
 
         if (!(event.getEntity() instanceof LivingEntity)) return;
         LivingEntity entity = (LivingEntity) event.getEntity();
-        if (!plugin.getEntityStackManager().isStackedAndLoaded(entity)) return;
-        EntityStack stack = plugin.getEntityStackManager().getStack(entity);
+        if (!plugin.getEntityStackManager().isStackedEntity(entity)) return;
+        EntityStack stack = plugin.getEntityStackManager().getStackedEntity(entity);
 
         Player player = (Player) event.getDamager();
 
         if (Settings.KILL_WHOLE_STACK_ON_DEATH.getBoolean() && Settings.REALISTIC_DAMAGE.getBoolean() && !player.getGameMode().equals(GameMode.CREATIVE)) {
             ItemStack tool = player.getInventory().getItemInHand();
             if (tool.getType().getMaxDurability() < 1 || (tool.getItemMeta() != null && (tool.getItemMeta().isUnbreakable()
-                    || tool.getItemMeta().isUnbreakable())))
+                    || (ServerProject.isServer(ServerProject.SPIGOT, ServerProject.PAPER) && tool.getItemMeta().isUnbreakable()))))
                 return;
 
-            int unbreakingLevel = tool.getEnchantmentLevel(Enchantment.DURABILITY);
+            int unbreakingLevel = tool.getEnchantmentLevel(Enchantment.UNBREAKING);
 
             int actualDamage = 0;
             for (int i = 0; i < stack.getAmount(); i++)

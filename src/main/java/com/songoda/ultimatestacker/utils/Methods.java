@@ -4,18 +4,13 @@ import com.songoda.core.utils.TextUtils;
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.stackable.entity.custom.CustomEntity;
-import net.minecraft.nbt.CompoundTag;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.block.CreatureSpawner;
-import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.BlockStateMeta;
-import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Map;
 
@@ -127,7 +122,7 @@ public class Methods {
         return TextUtils.formatText(nameFormat).trim();
     }
 
-    public static ItemStack getSpawnerItem(EntityType entityType, int amount) {
+    /*public static ItemStack getSpawnerItem(EntityType entityType, int amount) {
         ItemStack item = new ItemStack(Material.SPAWNER);
         ItemMeta meta = item.getItemMeta();
         meta.setDisplayName(Methods.compileSpawnerName(entityType, amount));
@@ -136,15 +131,12 @@ public class Methods {
         ((BlockStateMeta) meta).setBlockState(cs);
         item.setItemMeta(meta);
 
-        /*NBTItem nbtItem = new NBTItem(item);
-        nbtItem.setInteger("spawner_stack_size", amount);
-        return nbtItem.getItem();*/
         net.minecraft.world.item.ItemStack nbtItem = CraftItemStack.asNMSCopy(item);
         CompoundTag compoundTag = nbtItem.hasTag() ? nbtItem.getTag() : new CompoundTag();
         compoundTag.putInt("spawner_stack_size", amount);
         nbtItem.setTag(compoundTag);
         return CraftItemStack.asBukkitCopy(nbtItem);
-    }
+    }*/
 
     public static boolean isInt(String number) {
         if (number == null || number.equals(""))

@@ -8,7 +8,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitTask;
 
 import com.songoda.ultimatestacker.UltimateStacker;
-import com.songoda.ultimatestacker.tasks.StackingTask;
 
 public class CommandMoncube implements CommandExecutor {
 	
@@ -21,8 +20,8 @@ public class CommandMoncube implements CommandExecutor {
 	    			task.cancel();
 	    			
 	    	}
-			UltimateStacker.getInstance().setStackingTask(new StackingTask(UltimateStacker.getInstance()));
-			UltimateStacker.getInstance().startSpawnerAndFarmsActivity();
+			//UltimateStacker.getInstance().setStackingTask(new StackingTaskV2(UltimateStacker.getInstance()));
+			//UltimateStacker.getInstance().startSpawnerAndFarmsActivity();
 		}
 		return true;
 	}

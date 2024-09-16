@@ -3,10 +3,8 @@ package com.songoda.ultimatestacker.commands;
 import com.songoda.core.commands.AbstractCommand;
 import com.songoda.core.utils.TextUtils;
 import com.songoda.ultimatestacker.UltimateStacker;
-import com.songoda.ultimatestacker.stackable.entity.EntityStack;
-import com.songoda.ultimatestacker.utils.Methods;
-import org.bukkit.Location;
-import org.bukkit.Material;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStack;
+import com.songoda.ultimatestacker.tasks.StackingTaskV2;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
@@ -14,7 +12,6 @@ import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -55,11 +52,12 @@ public class CommandSpawn extends AbstractCommand {
             }
             sender.sendMessage(TextUtils.formatText("&6" + list));
         } else {
-            LivingEntity entity = (LivingEntity)player.getWorld().spawnEntity(player.getLocation(), type);
-            EntityStack stack = plugin.getEntityStackManager().addStack(entity);
-            stack.createDuplicates(((Methods.isInt(args[1])) ? Integer.parseInt(args[1]) : 1) - 1);
-            stack.updateStack();
-            plugin.getStackingTask().attemptSplit(stack, entity);
+            StackingTaskV2 stackingTask = plugin.getStackingTask();
+            if (stackingTask != null) {
+                LivingEntity entity = (LivingEntity)player.getWorld().spawnEntity(player.getLocation(), type);
+                EntityStack stack = plugin.getEntityStackManager().createStackedEntity(entity, Integer.parseInt(args[1]));
+                stackingTask.attemptSplit(stack, -1);
+            }
         }
 
         return ReturnType.SUCCESS;

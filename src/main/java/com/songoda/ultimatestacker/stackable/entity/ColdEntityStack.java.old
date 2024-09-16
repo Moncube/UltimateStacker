@@ -92,7 +92,8 @@ public class ColdEntityStack implements Stackable {
         NBTEntityImpl nbtEntity = NBTCoreImpl.newEntity();
         nbtEntity.deSerialize(stackedEntities.getFirst().getSerializedEntity());
 
-        for (CustomEntity customEntity : plugin.getCustomEntityManager().getRegisteredCustomEntities()) {
+        // USELESS : we don't use custom entities (MythicMobs)
+        /*for (CustomEntity customEntity : plugin.getCustomEntityManager().getRegisteredCustomEntities()) {
             String identifier = customEntity.getPluginName() + "_UltimateStacker";
             if (!nbtEntity.has(identifier)) continue;
             LivingEntity entity = customEntity.spawnFromIdentifier(nbtEntity.getString(identifier), location);
@@ -100,7 +101,7 @@ public class ColdEntityStack implements Stackable {
             stackedEntities.removeFirst();
             //plugin.getDataManager().deleteStackedEntity(entity.getUniqueId());
             return entity;
-        }
+        }*/
 
         LivingEntity newEntity = null;
         for (int i = 0; i < 5; i++) {
@@ -117,8 +118,8 @@ public class ColdEntityStack implements Stackable {
 
         return newEntity;
     }
-    
-    public LivingEntity takeOneAndSpawnEntitySync(Location location) {
+
+    /*public LivingEntity takeOneAndSpawnEntitySync(Location location) {
         if (stackedEntities.isEmpty()) return null;
         NBTEntityImpl nbtEntity = NBTCoreImpl.newEntity();
         nbtEntity.deSerialize(stackedEntities.getFirst().getSerializedEntity());
@@ -138,7 +139,7 @@ public class ColdEntityStack implements Stackable {
         //plugin.getDataManager().deleteStackedEntitySync(newEntity.getUniqueId());
 
         return newEntity;
-    }
+    }*/
     
     @Override
     public int getAmount() {

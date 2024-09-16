@@ -7,7 +7,7 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobSpawnType;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_20_R3.CraftWorld;
+import org.bukkit.craftbukkit.CraftWorld;
 
 import java.util.Optional;
 
@@ -29,13 +29,13 @@ public class NBTEntityImpl extends NBTCompoundImpl {
 
             Entity spawned = optionalEntity.get().spawn(
                     ((CraftWorld) location.getWorld()).getHandle(),
-                    compound,
+                    /*compound,
                     null,
-                    //null,
+                    //null,*/
                     new BlockPos(location.getBlockX(), location.getBlockY(), location.getBlockZ()),
-                    MobSpawnType.COMMAND,
-                    true,
-                    false
+                    MobSpawnType.COMMAND
+                    /*true,
+                    false*/
             );
 
             if (spawned != null) {

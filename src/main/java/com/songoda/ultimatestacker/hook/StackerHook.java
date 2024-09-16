@@ -1,6 +1,6 @@
 package com.songoda.ultimatestacker.hook;
 
-import com.songoda.ultimatestacker.stackable.entity.EntityStack;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStack;
 import org.bukkit.entity.Player;
 
 public interface StackerHook {

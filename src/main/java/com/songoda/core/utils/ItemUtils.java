@@ -4,14 +4,11 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
 import com.songoda.core.compatibility.ServerVersion;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.RandomSource;
-import net.minecraft.world.item.enchantment.EnchantmentHelper;
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
-import org.bukkit.craftbukkit.v1_20_R3.entity.CraftPlayer;
-import org.bukkit.craftbukkit.v1_20_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.entity.CraftPlayer;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.EquipmentSlot;
@@ -245,7 +242,7 @@ public class ItemUtils {
      * @return copy of item with a blank enchantment nbt tag
      */
     public static ItemStack addGlow(ItemStack item) {
-        item.addUnsafeEnchantment(Enchantment.DURABILITY, 1);
+        item.addUnsafeEnchantment(Enchantment.UNBREAKING, 1);
         // you can at least hide the enchantment, though
         ItemMeta m = item.getItemMeta();
         m.addItemFlags(ItemFlag.HIDE_ENCHANTS);
@@ -262,7 +259,7 @@ public class ItemUtils {
      * @return copy of the item without any enchantment tag
      */
     public static ItemStack removeGlow(ItemStack item) {
-        item.removeEnchantment(Enchantment.DURABILITY);
+        item.removeEnchantment(Enchantment.UNBREAKING);
 
         return item;
     }

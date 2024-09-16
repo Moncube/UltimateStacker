@@ -65,8 +65,11 @@ public class StackingTask extends BukkitRunnable {
         this.stackManager = plugin.getEntityStackManager();
 
         // Add loaded worlds.
-        for (World world : Bukkit.getWorlds())
+        for (World world : Bukkit.getWorlds()) {
+            //Filter disabled worlds to avoid continuous checks in the stacking loop
+            if (isWorldDisabled(world)) continue;
             loadedWorlds.add(new SWorld(world));
+        }
 
         // Start the stacking task.
         runTaskTimerAsynchronously(plugin, 0, Settings.STACK_SEARCH_TICK_SPEED.getInt());
@@ -79,9 +82,6 @@ public class StackingTask extends BukkitRunnable {
 
         // Loop through each world.
         for (SWorld sWorld : loadedWorlds) {
-            // If world is disabled then continue to the next world.
-            if (isWorldDisabled(sWorld.getWorld())) continue;
-
             // Get the loaded entities from the current world and reverse them.
             List<LivingEntity> entities;
             try {
@@ -92,24 +92,26 @@ public class StackingTask extends BukkitRunnable {
                 // Sometimes accessing this method asynchronously throws an error. This is super rare and
                 // as such doesn't really affect the plugin so we're just going to ignore this failure.
             }
-            Collections.reverse(entities);
+            //Collections.reverse(entities); // Commented by PapiCapi : WTF IS THAT
 
-            // Loop through the entities.
-            for (LivingEntity entity : entities) {
-                // Get entity location to pass around as its faster this way.
-                Location location = entity.getLocation();
+            //Filter non-stackable entities to improve performance on main thread
+            entities.removeIf(entity -> !isEntityStackable(entity));
 
-                // Check to see if entity is not stackable.
-                if (!isEntityStackable(entity))
-                    continue;
+            //Bukkit.getScheduler().runTask(plugin, () -> {
+                // Loop through the entities.
+                for (LivingEntity entity : entities) {
 
-                // Make sure our entity has not already been processed.
-                // Skip it if it has been.
-                if (this.processed.contains(entity.getUniqueId())) continue;
+                    // Make sure our entity has not already been processed.
+                    // Skip it if it has been.
+                    if (this.processed.contains(entity.getUniqueId())) continue;
 
-                // Process the entity.
-                this.processEntity(entity, sWorld, location);
-            }
+                    // Get entity location to pass around as its faster this way.
+                    Location location = entity.getLocation();
+
+                    // Process the entity.
+                    this.processEntity(entity, sWorld, location);
+                }
+            //});
         }
         // Clear caches in preparation for the next run.
         this.processed.clear();
@@ -172,11 +174,11 @@ public class StackingTask extends BukkitRunnable {
 
     }
 
-    private void processEntity(LivingEntity livingEntity, SWorld sWorld, Location location) {
+    private void processEntity(LivingEntity baseEntity, SWorld sWorld, Location location) {
 
         //PapiCapi begin
         synchronized (processed) {
-            if (processed.contains(livingEntity.getUniqueId())) {
+            if (processed.contains(baseEntity.getUniqueId())) {
                 plugin.getLogger().warning("Found an entity processed to add to a stack ! Cancelling ... 1");
                 return;
             }
@@ -185,44 +187,47 @@ public class StackingTask extends BukkitRunnable {
 
         // Get the stack from the entity. It should be noted that this value will
         // be null if our entity is not a stack.
-        EntityStack stack = plugin.getEntityStackManager().getStack(livingEntity);
+        EntityStack baseStack = plugin.getEntityStackManager().getStack(baseEntity);
+
+        // Get the maximum stack size for this entity.
+        int maxEntityStackSize = getEntityStackSize(baseEntity);
 
         // Is this entity stacked?
-        boolean isStack = stack != null;
+        boolean isStack = baseStack != null;
 
         // The amount that is stackable.
-        int amountToStack = isStack ? stack.getAmount() : 1;
+        int baseSize = isStack ? baseStack.getAmount() : 1;
+        //UltimateStacker.printNearbyPaps("Amount to stack : " + amountToStack, location);
 
         //Beta addon villageois stackés sur le skyblock
-        if(livingEntity.getType()==EntityType.VILLAGER) {
-        	Boolean villagerFlag = WorldGuardHook.isEnabled() ? WorldGuardHook.getBooleanFlag(livingEntity.getLocation(), "villager-stacking") : null;
+        if(baseEntity.getType()==EntityType.VILLAGER) {
+        	Boolean villagerFlag = WorldGuardHook.isEnabled() ? WorldGuardHook.getBooleanFlag(baseEntity.getLocation(), "villager-stacking") : null;
         	if(villagerFlag == null || !villagerFlag) {
         		return;
         	}
         }
 
         // Attempt to split our stack. If the split is successful then skip this entity.
-        if (isStack && attemptSplit(stack, livingEntity)) return;
+        if (isStack && attemptSplit(baseStack, baseEntity)) return;
 
         // If this entity is named, a custom entity or disabled then skip it.
-        if (!isStack && (livingEntity.getCustomName() != null
-                && plugin.getCustomEntityManager().getCustomEntity(livingEntity) == null)
-                || !configurationSection.getBoolean("Mobs." + livingEntity.getType().name() + ".Enabled"))
+        if (!isStack && (baseEntity.getCustomName() != null
+                && plugin.getCustomEntityManager().getCustomEntity(baseEntity) == null)
+                || !configurationSection.getBoolean("Mobs." + baseEntity.getType().name() + ".Enabled")) {
+            processed.add(baseEntity.getUniqueId());
             return;
-
-        // Get the maximum stack size for this entity.
-        int maxEntityStackSize = getEntityStackSize(livingEntity);
+        }
 
         // Get similar entities around our entity and make sure those entities are both compatible and stackable.
         List<LivingEntity> stackableFriends = new LinkedList<>();
-        for (LivingEntity entity : getSimilarEntitiesAroundEntity(livingEntity, sWorld, location)) {
+        for (LivingEntity entity : getSimilarEntitiesAroundEntity(baseEntity, sWorld, location)) {
             // Check to see if entity is not stackable.
             if (!isEntityStackable(entity))
                 continue;
             //PapiCapi
             try {
-                double distanceSquared = livingEntity.getLocation().distanceSquared(entity.getLocation());
-                if ( distanceSquared > 1 && isSeparatedByWallSync(livingEntity, entity).get()) { //entities on the same block don't stack
+                double distanceSquared = baseEntity.getLocation().distanceSquared(entity.getLocation());
+                if ( distanceSquared > 1 && isSeparatedByWallSync(baseEntity, entity).get()) { //entities on the same block don't stack
                     continue;
                 }
             } catch (ExecutionException | InterruptedException e) {
@@ -234,6 +239,7 @@ public class StackingTask extends BukkitRunnable {
             // Add this entity to our stackable friends.
             stackableFriends.add(entity);
         }
+        //UltimateStacker.printNearbyPaps("stackableFriends: " + stackableFriends, location);
 
         // Loop through our similar stackable entities.
         for (LivingEntity entity : stackableFriends) {
@@ -241,7 +247,7 @@ public class StackingTask extends BukkitRunnable {
             if (this.processed.contains(entity.getUniqueId())) continue;
 
             // Check our WorldGuard flag.
-            Boolean flag = WorldGuardHook.isEnabled() ? WorldGuardHook.getBooleanFlag(livingEntity.getLocation(), "mob-stacking") : null;
+            Boolean flag = WorldGuardHook.isEnabled() ? WorldGuardHook.getBooleanFlag(baseEntity.getLocation(), "mob-stacking") : null;
             if (flag != null && !flag)
                 continue;
 
@@ -251,14 +257,17 @@ public class StackingTask extends BukkitRunnable {
             // Check to see if this entity is stacked and friendStack plus
             // our amount to stack is not above our max friendStack size
             // for this entity.
-            if (friendStack != null && (friendStack.getAmount() + amountToStack) <= maxEntityStackSize) {
+            if (friendStack != null && (friendStack.getAmount() + baseSize) <= maxEntityStackSize) {
+                //UltimateStacker.printNearbyPaps("is a friendstack : "+entity, location);
 
                 // If we are a stack lets merge our stack with the just found friend stack.
                 if (isStack) {
+                    //UltimateStacker.printNearbyPaps("Adding as stack", location);
+
                     // Get the host entity.
-                    StackedEntity host = stack.getHostAsStackedEntity();
+                    StackedEntity host = baseStack.getHostAsStackedEntity();
                     // Get all the stacked entities in our stack and add them to a list.
-                    List<StackedEntity> entities = stack.takeAllEntities();
+                    List<StackedEntity> entities = baseStack.takeAllEntities();
                     // Add the host to this list.
                     entities.add(host);
                     // Add the collected entities to the new stack.
@@ -268,35 +277,35 @@ public class StackingTask extends BukkitRunnable {
                     // Push changes to the database.
                     //plugin.getDataManager().createStackedEntities(friendStack, entities);
                 } else {
-
+                    //UltimateStacker.printNearbyPaps("Adding as simple entity", location);
                     synchronized (processed) {
-                        if ( processed.contains(livingEntity.getUniqueId()) ) {
+                        if ( processed.contains(baseEntity.getUniqueId()) ) {
                             plugin.getLogger().warning("Found an entity processed to add to a stack ! Cancelling ... 2");
                             return;
                         }
 
-                        friendStack.addEntityToStack(livingEntity);
+                        friendStack.addEntityToStack(baseEntity);
                     }
 
                 }
 
                 // Drop lead if applicable then remove our entity and mark it as processed.
-                if (livingEntity.isLeashed())
-                    Bukkit.getScheduler().runTask(plugin, () -> livingEntity.getWorld()
-                            .dropItemNaturally(livingEntity.getLocation(), new ItemStack(Material.LEAD)));
-                Bukkit.getScheduler().runTask(plugin, livingEntity::remove);
-                processed.add(livingEntity.getUniqueId());
+                if (baseEntity.isLeashed())
+                    Bukkit.getScheduler().runTask(plugin, () -> baseEntity.getWorld()
+                            .dropItemNaturally(baseEntity.getLocation(), new ItemStack(Material.LEAD)));
+                Bukkit.getScheduler().runTask(plugin, baseEntity::remove);
+                processed.add(baseEntity.getUniqueId());
 
                 return;
             } else if (friendStack == null
                     && isStack
-                    && (stack.getAmount() + 1) <= maxEntityStackSize
+                    && (baseStack.getAmount() + 1) <= maxEntityStackSize
                     && canFly(entity)
                     && Settings.ONLY_STACK_FLYING_DOWN.getBoolean()
                     && location.getY() > entity.getLocation().getY()) {
 
                 // Make the friend the new stack host.
-                EntityStack newStack = stackManager.updateStack(livingEntity, entity);
+                EntityStack newStack = stackManager.updateStack(baseEntity, entity);
 
                 if (newStack == null) {
                     continue;
@@ -304,11 +313,11 @@ public class StackingTask extends BukkitRunnable {
 
                 // Add our entity to that stack
                 //plugin.getDataManager().createStackedEntity(newStack, newStack.addEntityToStack(livingEntity));
-                newStack.addEntityToStack(livingEntity);
+                newStack.addEntityToStack(baseEntity);
 
                 // Remove our entity and mark it as processed.
-                Bukkit.getScheduler().runTask(plugin, livingEntity::remove);
-                processed.add(livingEntity.getUniqueId());
+                Bukkit.getScheduler().runTask(plugin, baseEntity::remove);
+                processed.add(baseEntity.getUniqueId());
                 return;
             }
         }
@@ -317,7 +326,7 @@ public class StackingTask extends BukkitRunnable {
         if (isStack) return;
 
         // Check our WorldGuard flag.
-        Boolean flag = WorldGuardHook.isEnabled() ? WorldGuardHook.getBooleanFlag(livingEntity.getLocation(), "mob-stacking") : null;
+        Boolean flag = WorldGuardHook.isEnabled() ? WorldGuardHook.getBooleanFlag(baseEntity.getLocation(), "mob-stacking") : null;
         if (flag != null && !flag)
             return;
 
@@ -326,9 +335,9 @@ public class StackingTask extends BukkitRunnable {
 
         // If the stack cap is met then delete this entity.
         if (maxPerTypeStacksPerChunk != -1
-                && (getSimilarStacksInChunk(sWorld, livingEntity) + 1) > maxPerTypeStacksPerChunk) {
-            Bukkit.getScheduler().runTask(plugin, livingEntity::remove);
-            this.processed.add(livingEntity.getUniqueId());
+                && (getSimilarStacksInChunk(sWorld, baseEntity) + 1) > maxPerTypeStacksPerChunk) {
+            Bukkit.getScheduler().runTask(plugin, baseEntity::remove);
+            this.processed.add(baseEntity.getUniqueId());
             return;
         }
 
@@ -339,7 +348,7 @@ public class StackingTask extends BukkitRunnable {
                 || minEntityStackSize > maxEntityStackSize) return;
 
         // If a stack was never found create a new one.
-        EntityStack newStack = stackManager.addStack(livingEntity);
+        EntityStack newStack = stackManager.addStack(baseEntity);
 
         List<LivingEntity> livingEntities = new LinkedList<>();
 
@@ -351,7 +360,7 @@ public class StackingTask extends BukkitRunnable {
             // Make sure we're not naming some poor kids pet.
             if (entity.getCustomName() != null
                     && plugin.getCustomEntityManager().getCustomEntity(entity) == null) {
-                processed.add(livingEntity.getUniqueId());
+                processed.add(baseEntity.getUniqueId());
                 newStack.destroy();
                 return;
             }
@@ -539,10 +548,10 @@ public class StackingTask extends BukkitRunnable {
                     if (!(initialEntity instanceof Sheep)) break;
 
                     Sheep sheep = ((Sheep) initialEntity);
-                    if (sheep.isSheared()) {
-                        entityList.removeIf(entity -> !((Sheep) entity).isSheared());
+                    if (!sheep.readyToBeSheared()) {
+                        entityList.removeIf(entity -> ((Sheep) entity).readyToBeSheared());
                     } else {
-                        entityList.removeIf(entity -> ((Sheep) entity).isSheared());
+                        entityList.removeIf(entity -> !((Sheep) entity).readyToBeSheared());
                     }
                     break;
                 }

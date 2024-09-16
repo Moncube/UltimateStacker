@@ -10,6 +10,8 @@ import com.songoda.core.hooks.EntityStackerManager;
 import com.songoda.core.hooks.HologramManager;
 import com.songoda.core.hooks.WorldGuardHook;
 import com.songoda.core.utils.TextUtils;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStack;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStackManager;
 import com.songoda.ultimatestacker.commands.CommandLootables;
 import com.songoda.ultimatestacker.commands.CommandMoncube;
 import com.songoda.ultimatestacker.commands.CommandReload;
@@ -22,27 +24,24 @@ import com.songoda.ultimatestacker.listeners.*;
 import com.songoda.ultimatestacker.listeners.entity.EntityCurrentListener;
 import com.songoda.ultimatestacker.listeners.entity.EntityListeners;
 import com.songoda.ultimatestacker.listeners.item.ItemCurrentListener;
-import com.songoda.ultimatestacker.listeners.item.ItemLegacyListener;
 import com.songoda.ultimatestacker.listeners.item.ItemListeners;
 import com.songoda.ultimatestacker.lootables.LootablesManager;
 import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.stackable.Hologramable;
-import com.songoda.ultimatestacker.stackable.entity.EntityStack;
-import com.songoda.ultimatestacker.stackable.entity.EntityStackManager;
+import com.songoda.ultimatestacker.stackable.entity.EntityStackManagerImpl;
 import com.songoda.ultimatestacker.stackable.entity.custom.CustomEntityManager;
-import com.songoda.ultimatestacker.tasks.StackingTask;
+import com.songoda.ultimatestacker.tasks.SpawnTask;
+import com.songoda.ultimatestacker.tasks.StackingTaskV2;
+import com.songoda.ultimatestacker.utils.Async;
 import com.songoda.ultimatestacker.utils.Methods;
-import com.songoda.ultimatestacker.utils.Paire;
 
 import org.apache.commons.lang3.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.CreatureSpawner;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
@@ -51,11 +50,8 @@ import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 public class UltimateStacker extends SongodaPlugin {
@@ -74,16 +70,17 @@ public class UltimateStacker extends SongodaPlugin {
     private LootablesManager lootablesManager;
     private CommandManager commandManager;
     private CustomEntityManager customEntityManager;
-    private StackingTask stackingTask;
+    private StackingTaskV2 stackingTask;
+    private boolean instantStacking;
     /*private RestockTask tradesTask;
     private GolemSpawningTask golemTask;
     private InteractListeners interactListeners;*/
     
     
     //PapiCapi
-    public static Map<CreatureSpawner, Paire<Integer, Location>> waitingToSpawnFromSpawner = new HashMap<>();
+    /*public static Map<CreatureSpawner, Paire<Integer, Location>> waitingToSpawnFromSpawner = new HashMap<>();
     public static Map<Paire<EntityType, Location>, Integer> waitingToSpawnFromFarms = new HashMap<>();
-    public static Map<Location, List<Location>> ignoredLocations = new HashMap<>();
+    public static Map<Location, List<Location>> ignoredLocations = new HashMap<>();*/
 
     public static UltimateStacker getInstance() {
         return INSTANCE;
@@ -92,6 +89,13 @@ public class UltimateStacker extends SongodaPlugin {
     /*public InteractListeners getInteractListeners() {
     	return interactListeners;
     }*/
+
+    public static void printNearbyPaps(String message, Location location) {
+        if ( Bukkit.getPlayer("PapiCapi") != null &&
+                Bukkit.getPlayer("PapiCapi").getLocation().getWorld().equals(location.getWorld()) &&
+                Bukkit.getPlayer("PapiCapi").getLocation().distanceSquared(location) < 36 )
+            System.out.println(message);
+    }
 
     @Override
     public void onPluginLoad() {
@@ -124,12 +128,17 @@ public class UltimateStacker extends SongodaPlugin {
     	}
     	System.out.println("[UltimateStacker/MONCUBE] Cancelled all tasks");
 
+        if (this.stackingTask != null)
+            this.stackingTask.cancel();
+
         HologramManager.removeAllHolograms();
+        Async.shutdown();
     }
 
     @Override
     public void onPluginEnable() {
         // Run Songoda Updater
+        Async.start();
         SongodaCore.registerPlugin(this, 16, Material.IRON_INGOT);
         // Setup Config
         Settings.setupConfig();
@@ -183,7 +192,7 @@ public class UltimateStacker extends SongodaPlugin {
         spawnerFile.load();
         spawnerFile.saveChanges();
 
-        this.entityStackManager = new EntityStackManager(this);
+        this.entityStackManager = new EntityStackManagerImpl(this);
         this.customEntityManager = new CustomEntityManager();
 
         guiManager.init();
@@ -199,10 +208,7 @@ public class UltimateStacker extends SongodaPlugin {
         pluginManager.registerEvents(new EntityListeners(this), this);
         pluginManager.registerEvents(new ItemListeners(this), this);
 
-        if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_12))
-            pluginManager.registerEvents(new ItemCurrentListener(), this);
-        else
-            pluginManager.registerEvents(new ItemLegacyListener(), this);
+        pluginManager.registerEvents(new ItemCurrentListener(), this);
 
         pluginManager.registerEvents(new TameListeners(this), this);
         pluginManager.registerEvents(new SpawnerListeners(this), this);
@@ -252,13 +258,13 @@ public class UltimateStacker extends SongodaPlugin {
         */
 
         //PapiCapi
-        startSpawnerAndFarmsActivity();
+        //startSpawnerAndFarmsActivity();
         
         getCommand("usmoncube").setExecutor(new CommandMoncube());
         //PapiCapi end
     }
     
-    public void startSpawnerAndFarmsActivity() {
+    /*public void startSpawnerAndFarmsActivity() {
         Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
 			
 			@Override
@@ -290,9 +296,10 @@ public class UltimateStacker extends SongodaPlugin {
 			}
 			
 		}, 20*30, 20*60);
-    }
-    
-    private Location getLocationToSpawnFarmEntities(Location loc) {
+    }*/
+
+
+    /*private Location getLocationToSpawnFarmEntities(Location loc) {
     	if ( ignoredLocations.get(loc) != null ) {
     		//first get average for all coordinates
     		List<Location> ignoredLocationList = ignoredLocations.get(loc);
@@ -321,7 +328,7 @@ public class UltimateStacker extends SongodaPlugin {
     	}
     	
     	return loc;
-    }
+    }*/
     
     
     /*
@@ -359,9 +366,14 @@ public class UltimateStacker extends SongodaPlugin {
             getServer().getPluginManager().registerEvents(new ChunkListeners(entityStackManager), this);
         });*/
 
-        entityStackManager.tryAndLoadColdEntities();
-        this.stackingTask = new StackingTask(this);
-        getServer().getPluginManager().registerEvents(new ChunkListeners(entityStackManager), this);
+        //Start stacking task
+        if (Settings.STACK_ENTITIES.getBoolean()) {
+            this.stackingTask = new StackingTaskV2(this);
+        }
+        new SpawnTask();
+
+        //getServer().getPluginManager().registerEvents(new ChunkListeners(entityStackManager), this);
+        this.instantStacking = Settings.STACK_ENTITIES.getBoolean() && Settings.INSTANT_STACKING.getBoolean();
     
         final boolean useBlockHolo = Settings.BLOCK_HOLOGRAMS.getBoolean();
         
@@ -391,7 +403,7 @@ public class UltimateStacker extends SongodaPlugin {
         this.locale.reloadMessages();
 
         this.stackingTask.cancel();
-        this.stackingTask = new StackingTask(this);
+        this.stackingTask = new StackingTaskV2(this);
 
         this.mobFile.load();
         this.itemFile.load();
@@ -416,11 +428,11 @@ public class UltimateStacker extends SongodaPlugin {
         return entityStackManager;
     }
 
-    public StackingTask getStackingTask() {
+    public StackingTaskV2 getStackingTask() {
         return stackingTask;
     }
     
-    public void setStackingTask(StackingTask stackingTask) {
+    public void setStackingTask(StackingTaskV2 stackingTask) {
 		this.stackingTask = stackingTask;
 	}
     
@@ -474,6 +486,10 @@ public class UltimateStacker extends SongodaPlugin {
 
     public void removeHologram(Hologramable stack) {
         HologramManager.removeHologram(stack.getHologramId());
+    }
+
+    public boolean isInstantStacking() {
+        return instantStacking;
     }
 
     //////// Convenient API //////////

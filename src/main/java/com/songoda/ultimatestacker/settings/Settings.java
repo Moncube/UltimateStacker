@@ -11,13 +11,16 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class Settings {
+public class Settings implements com.songoda.ultimatestacker.api.Settings {
 
     static final Config config = UltimateStacker.getInstance().getCoreConfig();
 
     public static final ConfigSetting STACK_SEARCH_TICK_SPEED = new ConfigSetting(config, "Main.Stack Search Tick Speed", 5,
             "The speed in which a new stacks will be created.",
             "It is advised to keep this number low.");
+
+    public static final ConfigSetting INSTANT_STACKING = new ConfigSetting(config, "Main.Instant Stacking", false,
+            "Should entities stacked into existing stacks before they spawned?");
 
     public static final ConfigSetting DISABLED_WORLDS = new ConfigSetting(config, "Main.Disabled Worlds", Arrays.asList("World1", "World2", "World3"),
             "Worlds that stacking doesn't happen in.");
@@ -34,7 +37,7 @@ public class Settings {
             "The distance entities must be to each other in order to stack.");
 
     public static final ConfigSetting MAX_STACK_ENTITIES = new ConfigSetting(config, "Entities.Max Stack Size", 15,
-            "The max amount of entities in a single stack.");
+            "The max amount of entities in a single stack. Max value is 2000000000");
 
     // Note: this setting is also referenced in EpicSpawners
     public static final ConfigSetting MIN_STACK_ENTITIES = new ConfigSetting(config, "Entities.Min Stack Amount", 5,
@@ -45,8 +48,10 @@ public class Settings {
             "The maximum amount of each entity type stack allowed in a chunk.");
 
     public static final ConfigSetting STACK_WHOLE_CHUNK = new ConfigSetting(config, "Entities.Stack Whole Chunk", false,
-            "Should all qualifying entities in each chunk be stacked?",
-            "This will override the stacking radius.");
+            "Should all qualifying entities in each chunk be stacked?");
+
+    public static final ConfigSetting STACK_WHOLE_CHUNK_RADIUS = new ConfigSetting(config, "Entities.Stack Whole Chunk Radius", 1,
+            "Radius in chunks every direction around the entity that will be stacked.", "0 means only the chunk the entity is in.");
 
     public static final ConfigSetting ENTITY_NAMETAGS = new ConfigSetting(config, "Entities.Holograms Enabled", true,
             "Should holograms be displayed above stacked entities?");
@@ -103,7 +108,11 @@ public class Settings {
             "\"HORSE_STYLE\", \"HORSE_CARRYING_CHEST\", \"HORSE_HAS_ARMOR\", \"HORSE_HAS_SADDLE\",",
             "\"HORSE_JUMP\", \"RABBIT_TYPE\", \"VILLAGER_PROFESSION\", \"LLAMA_COLOR\",",
             "\"LLAMA_STRENGTH\", \"PARROT_TYPE\", \"PUFFERFISH_STATE\", \"TROPICALFISH_PATTERN\",",
-            "\"TROPICALFISH_BODY_COLOR\", \"TROPICALFISH_PATTERN_COLOR\", \"PHANTOM_SIZE\", \"CAT_TYPE\".");
+            "\"TROPICALFISH_BODY_COLOR\", \"TROPICALFISH_PATTERN_COLOR\", \"PHANTOM_SIZE\", \"CAT_TYPE\"",
+            "\"AXOLOTL_VARIANT\", \"AXOLOTL_PLAYING_DEAD\", \"GLOW_SQUID_DARK_TICKS\", \"GOAT_HAS_HORNS\",",
+            "\"FROG_VARIANT\", \"TADPOLE_AGE\", \"WARDEN_ANGER_LEVEL\", \"SNIFFER_HAS_SEEDS\",",
+            "\"FOX_TYPE\", \"HOGLIN_IMMUNE\".");
+
 
     public static final ConfigSetting SPLIT_CHECKS = new ConfigSetting(config, "Entities.Split Checks", Arrays.asList(Split.values()).stream()
             .map(Split::name).collect(Collectors.toList()),
@@ -183,7 +192,7 @@ public class Settings {
             "Should items that are blacklisted display holograms?");
 
     public static final ConfigSetting MAX_STACK_ITEMS = new ConfigSetting(config, "Items.Max Stack Size", 512,
-            "The max stack size for items.");
+            "The max stack size for items. Max value is 1500000000");
 
     public static final ConfigSetting NAME_FORMAT_ITEM = new ConfigSetting(config, "Items.Name Format", "&f{TYPE} &r[&6{AMT}x]",
             "The text displayed above a dropped item.");
@@ -210,7 +219,7 @@ public class Settings {
             "not display the stack size. The stack size will be added",
             "for stacks containing two or more items.");
 
-    public static final ConfigSetting SPAWNERS_ENABLED = new ConfigSetting(config, "Spawners.Enabled", true,
+    public static final ConfigSetting SPAWNERS_ENABLED = new ConfigSetting(config, "Spawners.Enabled", false,
             "Should spawners be stacked?");
 
     public static final ConfigSetting SPAWNER_HOLOGRAMS = new ConfigSetting(config, "Spawners.Holograms Enabled", true,
@@ -229,6 +238,9 @@ public class Settings {
 
     public static final ConfigSetting SNEAK_FOR_STACK = new ConfigSetting(config, "Spawners.Sneak To Receive A Stacked Spawner", true,
             "Toggle ability to receive a stacked spawner when breaking a spawner while sneaking.");
+
+    public static final ConfigSetting SNEAK_TO_ADD_ALL = new ConfigSetting(config, "Spawners.Sneak To Add All", true,
+            "Should the player be able to add all spawners to the stack if they are sneaking?");
 
     public static final ConfigSetting SPAWNERS_DONT_EXPLODE = new ConfigSetting(config, "Spawners.Prevent Spawners From Exploding", false,
             "Should spawners not break when blown up?");
@@ -275,16 +287,6 @@ public class Settings {
             "The enabled language file.",
             "More language files (if available) can be found in the plugins data folder.");
 
-    public static final ConfigSetting MYSQL_ENABLED = new ConfigSetting(config, "MySQL.Enabled", false,
-            "Set to 'true' to use MySQL instead of SQLite for data storage.");
-    public static final ConfigSetting MYSQL_HOSTNAME = new ConfigSetting(config, "MySQL.Hostname", "localhost");
-    public static final ConfigSetting MYSQL_PORT = new ConfigSetting(config, "MySQL.Port", 3306);
-    public static final ConfigSetting MYSQL_DATABASE = new ConfigSetting(config, "MySQL.Database", "your-database");
-    public static final ConfigSetting MYSQL_USERNAME = new ConfigSetting(config, "MySQL.Username", "user");
-    public static final ConfigSetting MYSQL_PASSWORD = new ConfigSetting(config, "MySQL.Password", "pass");
-    public static final ConfigSetting MYSQL_USE_SSL = new ConfigSetting(config, "MySQL.Use SSL", false);
-    public static final ConfigSetting MYSQL_POOL_SIZE = new ConfigSetting(config, "MySQL.Pool Size", 3, "Determines the number of connections the pool is using. Increase this value if you are getting timeout errors when more players online.");
-
     public static void setupConfig() {
         config.load();
         config.setAutoremove(true).setAutosave(true);
@@ -301,5 +303,15 @@ public class Settings {
         }
 
         config.saveChanges();
+    }
+
+    @Override
+    public int getMaxItemStackSize() {
+        return MAX_STACK_ITEMS.getInt();
+    }
+
+    @Override
+    public boolean killWholeStackOnDeath() {
+        return KILL_WHOLE_STACK_ON_DEATH.getBoolean();
     }
 }

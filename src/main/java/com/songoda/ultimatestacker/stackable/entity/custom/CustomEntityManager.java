@@ -4,6 +4,7 @@ import com.songoda.ultimatestacker.settings.Settings;
 import com.songoda.ultimatestacker.stackable.entity.custom.entities.MythicMobsCustomEntity;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
+import org.bukkit.plugin.Plugin;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,8 +19,14 @@ public class CustomEntityManager {
     private final List<CustomEntity> registeredCustomEntities = new ArrayList<>();
 
     public void load() {
-        if (isEnabled("MythicMobs"))
-            registeredCustomEntities.add(new MythicMobsCustomEntity());
+        if (isEnabled("MythicMobs")) {
+            Plugin plugin = Bukkit.getPluginManager().getPlugin("MythicMobs");
+            if (plugin.getDescription().getVersion().startsWith("4.")) {
+                //registeredCustomEntities.add(new MythicMobsCustomEntityLegacy());
+            } else {
+                registeredCustomEntities.add(new MythicMobsCustomEntity());
+            }
+        }
     }
 
     public boolean isEnabled(String plugin) {
@@ -29,7 +36,7 @@ public class CustomEntityManager {
 
     public CustomEntity getCustomEntity(Entity entity) {
         for (CustomEntity customEntity : registeredCustomEntities) {
-            if (customEntity.isMatchingType(entity)) {
+            if (customEntity.isMatchingType(entity) && customEntity.isCustomEntity(entity)) {
                 if (Settings.BLACKLISTED_CUSTOM_ENTITIES.getStringList()
                         .contains((customEntity.getPluginName() + "_" + customEntity.getNBTIdentifier(entity)).toLowerCase()))
                     continue;
@@ -41,5 +48,16 @@ public class CustomEntityManager {
 
     public List<CustomEntity> getRegisteredCustomEntities() {
         return Collections.unmodifiableList(registeredCustomEntities);
+    }
+
+    public boolean isCustomEntity(Entity entity) {
+        return getCustomEntity(entity) != null && getCustomEntity(entity).isCustomEntity(entity);
+    }
+
+    public boolean isStackable(Entity entity) {
+        CustomEntity customEntity = getCustomEntity(entity);
+        if (customEntity == null) return true;
+        String key = customEntity.getPluginName().toLowerCase() + "_" + customEntity.getNBTIdentifier(entity).toLowerCase();
+        return !Settings.BLACKLISTED_CUSTOM_ENTITIES.getStringList().contains(key);
     }
 }

@@ -1,8 +1,8 @@
 package com.songoda.ultimatestacker.hook.hooks;
 
 import com.songoda.core.hooks.jobs.JobsPlayerHandler;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStack;
 import com.songoda.ultimatestacker.hook.StackerHook;
-import com.songoda.ultimatestacker.stackable.entity.EntityStack;
 import org.bukkit.GameMode;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;

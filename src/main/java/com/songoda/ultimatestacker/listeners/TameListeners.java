@@ -1,8 +1,8 @@
 package com.songoda.ultimatestacker.listeners;
 
 import com.songoda.ultimatestacker.UltimateStacker;
-import com.songoda.ultimatestacker.stackable.entity.EntityStack;
-import com.songoda.ultimatestacker.stackable.entity.EntityStackManager;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStack;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStackManager;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -17,14 +17,14 @@ public class TameListeners implements Listener {
         this.plugin = plugin;
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler
     public void onTame(EntityTameEvent event) {
         LivingEntity entity = event.getEntity();
 
         EntityStackManager stackManager = plugin.getEntityStackManager();
-        if (!stackManager.isStackedAndLoaded(entity)) return;
+        if (!stackManager.isStackedEntity(entity)) return;
 
-        EntityStack stack = plugin.getEntityStackManager().getStack(entity);
+        EntityStack stack = plugin.getEntityStackManager().getStackedEntity(entity);
 
         if (stack.getAmount() <= 1) return;
 

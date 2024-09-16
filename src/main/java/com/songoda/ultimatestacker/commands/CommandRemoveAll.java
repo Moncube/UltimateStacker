@@ -3,14 +3,12 @@ package com.songoda.ultimatestacker.commands;
 import com.songoda.core.commands.AbstractCommand;
 import com.songoda.core.utils.TextUtils;
 import com.songoda.ultimatestacker.UltimateStacker;
-import com.songoda.ultimatestacker.stackable.entity.EntityStackManager;
-import com.songoda.ultimatestacker.utils.Methods;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStack;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStackManager;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 
@@ -46,17 +44,18 @@ public class CommandRemoveAll extends AbstractCommand {
             for (Entity entityO : world.getEntities()) {
                 if (entityO instanceof Player) continue;
 
-                if (entityO instanceof LivingEntity && (stackManager.isStackedAndLoaded((LivingEntity)entityO) || all)
+                if (entityO instanceof LivingEntity && (stackManager.isStackedEntity(entityO) || all)
                         && type.equalsIgnoreCase("entities")) {
-                    entityO.remove();
-                    plugin.getEntityStackManager().removeStack(entityO);
+                    EntityStack stack = plugin.getEntityStackManager().getStackedEntity((LivingEntity) entityO);
+                    if (stack == null) continue;
+                    stack.destroy();
                     amountRemoved++;
-                } else if (entityO.getType() == EntityType.DROPPED_ITEM && type.equalsIgnoreCase("items")) {
-                    if (!UltimateStacker.hasCustomAmount((Item)entityO) && !all)
+                }/* else if (entityO.getType() == EntityType.ITEM && type.equalsIgnoreCase("items")) {
+                    if (!UltimateStacker.getInstance().getStackedItemManager().isStackedItem((Item)entityO) && !all)
                         continue;
                     entityO.remove();
                     amountRemoved++;
-                }
+                }*/
             }
         }
 

@@ -1,7 +1,6 @@
 package com.songoda.ultimatestacker.utils;
 
 import com.songoda.core.world.SWorld;
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -49,16 +48,14 @@ public class CachedChunk {
             return new Entity[0];
         }
         Chunk chunk = getChunk();
-        return chunk == null ? new Entity[0] : sWorld.getEntitiesFromChunk(x, z);
+        return chunk == null ? new Entity[0] : chunk.getEntities();
     }
 
     @Override
     public boolean equals(Object o) {
-        if (o instanceof Chunk) {
-            Chunk other = (Chunk) o;
+        if (o instanceof Chunk other) {
             return getWorld().equals(other.getWorld().getName()) && this.x == other.getX() && this.z == other.getZ();
-        } else if (o instanceof CachedChunk) {
-            CachedChunk other = (CachedChunk) o;
+        } else if (o instanceof CachedChunk other) {
             return getWorld().equals(other.getWorld()) && this.x == other.getX() && this.z == other.getZ();
         } else return false;
     }

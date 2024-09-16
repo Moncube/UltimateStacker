@@ -1,7 +1,6 @@
 plugins {
     `java-library`
-    id("io.papermc.paperweight.userdev") version "1.3.3"
-    id("xyz.jpenilla.run-paper") version "1.0.6" // Adds runServer and runMojangMappedServer tasks for testing
+    id("io.papermc.paperweight.userdev") version "1.7.1"
 }
 
 group = "com.songoda"
@@ -18,11 +17,11 @@ repositories {
     maven("https://jitpack.io") // DecentHolograms | Vault ?
     maven("https://maven.enginehub.org/repo/")
     //maven("https://repo.codemc.io/repository/maven-public/")
-    maven("https://mvn.lumine.io/repository/maven-public/")
+    maven("https://mvn.lumine.io/repository/maven-public/") // MythicMobs
 }
 
 dependencies {
-    paperDevBundle("1.20.4-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("1.21.1-R0.1-SNAPSHOT")
 
     compileOnly("com.viaversion:viaversion-api:4.0.1")
     compileOnly("world.bentobox:bentobox:2.1.1-SNAPSHOT")
@@ -30,13 +29,13 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         exclude("org.bukkit")
     }
-    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.4") {
-        exclude("org.spigotmc")
+    compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.9") {
+        exclude("org.spigotmc", "spigot-api")
     }
     //compileOnly("com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.9")
     compileOnly("com.github.Zrips:Jobs:v4.17.2") //repo is jitpack
     compileOnly(files("libs/Clearlag.jar"))
-    compileOnly("io.lumine:Mythic-Dist:4.13.0")
+    compileOnly("io.lumine:Mythic-Dist:5.6.1")
 
     compileOnly("com.github.decentsoftware-eu:decentholograms:2.8.6")
 
@@ -59,7 +58,7 @@ tasks {
 
         // Set the release flag. This configures what version bytecode the compiler will emit, as well as what JDK APIs are usable.
         // See https://openjdk.java.net/jeps/247 for more information.
-        options.release.set(17)
+        options.release.set(21)
     }
     javadoc {
         options.encoding = Charsets.UTF_8.name() // We want UTF-8 for everything

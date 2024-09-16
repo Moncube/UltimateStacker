@@ -2,6 +2,7 @@ package com.songoda.ultimatestacker.listeners;
 
 import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.settings.Settings;
+import com.songoda.ultimatestacker.tasks.SpawnTask;
 import com.songoda.ultimatestacker.utils.Paire;
 
 import org.bukkit.Bukkit;
@@ -59,11 +60,11 @@ public class SpawnerListeners implements Listener {
     		event.setCancelled(true);
         	if ( event.getEntity() instanceof LivingEntity ) {
         		Paire<Integer, Location> paire = new Paire<>(0, event.getLocation());
-                if ( UltimateStacker.waitingToSpawnFromSpawner.containsKey(event.getSpawner()) )
-                	paire = UltimateStacker.waitingToSpawnFromSpawner.get(event.getSpawner());
+                if ( SpawnTask.waitingToSpawnFromSpawner.containsKey(event.getSpawner()) )
+                	paire = SpawnTask.waitingToSpawnFromSpawner.get(event.getSpawner());
 
                 paire.setFirstElement(paire.getFirstElement()+1);
-                UltimateStacker.waitingToSpawnFromSpawner.put(event.getSpawner(), paire);
+                SpawnTask.waitingToSpawnFromSpawner.put(event.getSpawner(), paire);
         	}
     	}
     }

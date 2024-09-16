@@ -14,7 +14,8 @@ public enum ServerVersion {
     private final static boolean isMocked;
 
     static {
-        String srvPackage = Bukkit.getServer().getClass().getPackage().getName();
+        //String srvPackage = Bukkit.getServer().getClass().getPackage().getName();
+        String srvPackage = Bukkit.getServer().getBukkitVersion();
         isMocked = srvPackage.equals("be.seeseemelk.mockbukkit");
 
         if (isMocked) {
@@ -25,7 +26,8 @@ public enum ServerVersion {
             serverReleaseVersion = "0";
         } else {
             serverPackagePath = srvPackage;
-            serverPackageVersion = serverPackagePath.substring(serverPackagePath.lastIndexOf('.') + 1);
+            //serverPackageVersion = serverPackagePath.substring(serverPackagePath.lastIndexOf('.') + 1);
+            serverPackageVersion = "V"+serverPackagePath.substring(0, serverPackagePath.indexOf('-')).replace(".", "_");
             serverReleaseVersion = serverPackageVersion.indexOf('R') != -1 ? serverPackageVersion.substring(serverPackageVersion.indexOf('R') + 1) : "";
         }
 
@@ -38,7 +40,6 @@ public enum ServerVersion {
                 return version;
             }
         }
-
         return UNKNOWN;
     }
 

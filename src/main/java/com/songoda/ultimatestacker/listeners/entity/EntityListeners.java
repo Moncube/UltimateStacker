@@ -1,35 +1,38 @@
 package com.songoda.ultimatestacker.listeners.entity;
 
+import com.songoda.core.configuration.Config;
 import com.songoda.ultimatestacker.UltimateStacker;
+import com.songoda.ultimatestacker.api.UltimateStackerApi;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStack;
+import com.songoda.ultimatestacker.api.stack.entity.EntityStackManager;
+import com.songoda.ultimatestacker.api.stack.item.StackedItem;
 import com.songoda.ultimatestacker.settings.Settings;
-import com.songoda.ultimatestacker.stackable.entity.EntityStack;
-import com.songoda.ultimatestacker.stackable.entity.EntityStackManager;
+import com.songoda.ultimatestacker.tasks.SpawnTask;
 import com.songoda.ultimatestacker.utils.Paire;
-
-import world.bentobox.bentobox.BentoBox;
-import world.bentobox.bentobox.api.flags.Flag;
-import world.bentobox.bentobox.database.objects.Island;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.CreatureSpawner;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.Creeper;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.ItemSpawnEvent;
-import org.bukkit.event.entity.CreatureSpawnEvent.SpawnReason;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.util.Vector;
+import world.bentobox.bentobox.BentoBox;
+import world.bentobox.bentobox.api.flags.Flag;
+import world.bentobox.bentobox.database.objects.Island;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,12 +41,15 @@ import java.util.List;
 public class EntityListeners implements Listener {
 
     private final UltimateStacker plugin;
+    private int searchRadius = Settings.SEARCH_RADIUS.getInt() * 16; //SEARCH_RADIUS is in chunks, so multiply by 16 to get blocks
+    private Config mobsConfig;
 
     public EntityListeners(UltimateStacker plugin) {
         this.plugin = plugin;
+        mobsConfig = plugin.getMobFile();
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler
     public void onEgg(ItemSpawnEvent event) {
         Material material = event.getEntity().getItemStack().getType();
         if (material != Material.EGG
@@ -63,26 +69,33 @@ public class EntityListeners implements Listener {
 
         EntityStackManager stackManager = plugin.getEntityStackManager();
 
-        if (!stackManager.isStackedAndLoaded(entity)) return;
+        if (!stackManager.isStackedEntity(entity)) return;
 
-        EntityStack stack = stackManager.getStack(entity);
+        EntityStack stack = stackManager.getStackedEntity(entity);
 
         ItemStack item = event.getEntity().getItemStack();
         int amount = (stack.getAmount() - 1) + item.getAmount();
         if (amount < 1) return;
         item.setAmount(Math.min(amount, item.getMaxStackSize()));
-        if (amount > item.getMaxStackSize())
-            UltimateStacker.updateItemAmount(event.getEntity(), amount);
+        if (amount > item.getMaxStackSize()) {
+            StackedItem stackedItem = UltimateStackerApi.getStackedItemManager().getStackedItem(event.getEntity());
+            stackedItem.setAmount(amount - item.getMaxStackSize());
+        }
         event.getEntity().setItemStack(item);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+    @EventHandler
     public void onHurt(EntityDamageByEntityEvent event) {
         if (!Settings.STACK_ENTITIES.getBoolean() || !(event.getDamager() instanceof Player)) return;
 
         Entity entity = event.getEntity();
 
-        if (entity instanceof LivingEntity && plugin.getEntityStackManager().isStackedAndLoaded((LivingEntity) entity)
+        if (!(entity instanceof LivingEntity)) return;
+        if (event.getDamager() instanceof Player) {
+            plugin.getEntityStackManager().setLastPlayerDamage(entity, (Player) event.getDamager());
+        }
+
+        if (plugin.getEntityStackManager().isStackedEntity(entity)
                 && Settings.DISABLE_KNOCKBACK.getBoolean()
                 && ((Player) event.getDamager()).getItemInHand().getEnchantmentLevel(Enchantment.KNOCKBACK) == 0) {
             Bukkit.getScheduler().scheduleSyncDelayedTask(plugin, () -> {
@@ -91,12 +104,36 @@ public class EntityListeners implements Listener {
         }
     }
 
-    @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
+    @EventHandler
     public void onSpawn(CreatureSpawnEvent event) {
-        event.getEntity().setMetadata("US_REASON", new FixedMetadataValue(plugin, event.getSpawnReason().name()));
+        String spawnReason = event.getSpawnReason().name();
+        if (plugin.isInstantStacking()) {
+            LivingEntity spawningEntity = event.getEntity();
+            EntityStackManager stackManager = plugin.getEntityStackManager();
+            if (stackManager.isStackedEntity(spawningEntity)) return; //We don't want to stack split entities or respawned stacks
+
+            List<LivingEntity> stackableFriends = plugin.getStackingTask().getSimilarEntitiesAroundEntity(spawningEntity, spawningEntity.getLocation());
+            if (stackableFriends.isEmpty()) {
+                event.getEntity().setMetadata("US_REASON", new FixedMetadataValue(plugin, spawnReason));
+                return;
+            }
+
+            LivingEntity friendStack = stackableFriends.get(0);
+            if (stackManager.isStackedEntity(friendStack)) {
+                EntityStack stack = stackManager.getStackedEntity(friendStack);
+                //getSimilarEntitiesAroundEntity check for max stack size, we don't need to check again
+                stack.add(1);
+                event.setCancelled(true);
+            } else {
+                stackManager.createStackedEntity(friendStack, 2);
+            }
+            return;
+        }
+
+        event.getEntity().setMetadata("US_REASON", new FixedMetadataValue(plugin, spawnReason));
     }
-    
-    @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
+
+    /*@EventHandler
     public void onBlow(EntityExplodeEvent event) {
         if (!plugin.spawnersEnabled()) return;
 
@@ -110,11 +147,11 @@ public class EntityListeners implements Listener {
 
             Location spawnLocation = block.getLocation();
 
-            //SpawnerStack spawner = plugin.getSpawnerStackManager().getSpawner(block);
+            SpawnerStack spawner = UltimateStackerApi.getSpawnerStackManager().getSpawner(block);
 
             if (Settings.SPAWNERS_DONT_EXPLODE.getBoolean())
                 toCancel.add(block);
-            /*else {
+            else {
                 String chance = "";
                 if (event.getEntity() instanceof Creeper)
                     chance = Settings.EXPLOSION_DROP_CHANCE_TNT.getString();
@@ -128,11 +165,11 @@ public class EntityListeners implements Listener {
                     ItemStack item = Methods.getSpawnerItem(blockType, spawner.getAmount());
                     spawnLocation.getWorld().dropItemNaturally(spawnLocation.clone().add(.5, 0, .5), item);
 
-                    SpawnerStack spawnerStack = plugin.getSpawnerStackManager().removeSpawner(spawnLocation);
-                    plugin.getDataManager().deleteSpawner(spawnerStack);
+                    SpawnerStack spawnerStack = UltimateStackerApi.getSpawnerStackManager().removeSpawner(spawnLocation);
+                    plugin.getPluginDataManager().delete(spawnerStack);
                     plugin.removeHologram(spawnerStack);
                 }
-            }*/
+            }
 
             Location nloc = spawnLocation.clone();
             nloc.add(.5, -.4, .5);
@@ -147,11 +184,12 @@ public class EntityListeners implements Listener {
         for (Block block : toCancel) {
             event.blockList().remove(block);
         }
-    }
+    }*/
+
     
     @EventHandler
     public void onMobSpawn(CreatureSpawnEvent event) {
-    	if ( (event.getSpawnReason() == SpawnReason.NATURAL || event.getSpawnReason() == SpawnReason.NETHER_PORTAL) &&
+    	if ( (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.NATURAL || event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.NETHER_PORTAL) &&
     			Settings.STACK_ENTITIES.getBoolean() &&
         		event.getLocation().getWorld().getName().equals("askyblock") &&
         		UltimateStacker.getInstance().getMobFile().getBoolean("Mobs." + event.getEntityType().name() + ".Enabled")) {
@@ -169,26 +207,26 @@ public class EntityListeners implements Listener {
             		
                     if ( getPaireOfLocation(event.getLocation(), event.getEntityType()) != null ) {
                     	paire = getPaireOfLocation(event.getLocation(), event.getEntityType());
-                    	amountAlreadySeen = UltimateStacker.waitingToSpawnFromFarms.get(paire);
+                    	amountAlreadySeen = SpawnTask.waitingToSpawnFromFarms.get(paire);
                     	
                     	
                     	//add to the ignored Locations
                     	List<Location> ignoredLocations;
-                    	if ( UltimateStacker.ignoredLocations.get(paire.getSecondElement()) != null ) { //map already contains an initialized list of ignored locations
-                    		ignoredLocations = UltimateStacker.ignoredLocations.get(paire.getSecondElement());
+                    	if ( SpawnTask.ignoredLocations.get(paire.getSecondElement()) != null ) { //map already contains an initialized list of ignored locations
+                    		ignoredLocations = SpawnTask.ignoredLocations.get(paire.getSecondElement());
                     	} else {
                     		ignoredLocations = new ArrayList<>();
                     	}
                     	ignoredLocations.add(event.getLocation());
-                    	
-                    	UltimateStacker.ignoredLocations.put(paire.getSecondElement(), ignoredLocations);
+
+                        SpawnTask.ignoredLocations.put(paire.getSecondElement(), ignoredLocations);
                     }
                     else
                     	paire = new Paire<>(event.getEntityType(), event.getLocation());
                     
                     
                     amountAlreadySeen++;
-                   	UltimateStacker.waitingToSpawnFromFarms.put(paire, amountAlreadySeen);
+                    SpawnTask.waitingToSpawnFromFarms.put(paire, amountAlreadySeen);
             	}
     			
     		}
@@ -201,7 +239,7 @@ public class EntityListeners implements Listener {
      * returns the first Paire where the distance is less than 7
      */
     private Paire<EntityType, Location> getPaireOfLocation(Location loc, EntityType type) {
-    	return UltimateStacker.waitingToSpawnFromFarms.keySet().stream().filter(paire -> paire.getSecondElement().distance(loc) < 50 && paire.getFirstElement() == type).findFirst().orElse(null);
+    	return SpawnTask.waitingToSpawnFromFarms.keySet().stream().filter(paire -> paire.getSecondElement().distance(loc) < 50 && paire.getFirstElement() == type).findFirst().orElse(null);
 
     }
 

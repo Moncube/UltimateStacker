@@ -7,6 +7,7 @@ import org.bukkit.Sound;
 import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -17,7 +18,7 @@ public class ItemCurrentListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH, ignoreCancelled = true)
     public void onPickup(EntityPickupItemEvent event) {
-        if (!Settings.STACK_ITEMS.getBoolean() || event.getItem() instanceof Arrow) return;
+        if (!Settings.STACK_ITEMS.getBoolean() || event.getItem() instanceof Projectile) return;
         // Amount here is not the total amount of item (32 if more than 32) but the amount of item the player can retrieve
         // ie there is x64 diamonds blocks (so 32), the player pick 8 items so the amount is 8 and not 32
 
@@ -25,10 +26,9 @@ public class ItemCurrentListener implements Listener {
         ItemStack stack = item.getItemStack();
         int amount = UltimateStacker.getActualItemAmount(item);
 
-        if (event.getEntity() instanceof Player) {
-            if (amount < (stack.getMaxStackSize() / 2)) return;
+        if (event.getEntity() instanceof Player player) {
+            if (amount <= (stack.getMaxStackSize() / 2)) return;
             event.setCancelled(true);
-            Player player = (Player) event.getEntity();
             player.playSound(player.getLocation(), Sound.ENTITY_ITEM_PICKUP, .2f, (float) (1 + Math.random()));
             Methods.updateInventory(event.getItem(), player.getInventory());
         } else {

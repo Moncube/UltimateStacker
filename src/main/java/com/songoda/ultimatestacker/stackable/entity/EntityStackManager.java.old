@@ -157,19 +157,19 @@ public class EntityStackManager {
         coldStacks.put(entity.getUniqueId(), coldStack);
     }
 
-    public void addStacks(Collection<ColdEntityStack> entities) {
+    /*public void addStacks(Collection<ColdEntityStack> entities) {
         for (ColdEntityStack stack : entities)
             coldStacks.put(stack.hostUniqueId, stack);
-    }
+    }*/
 
-    public ColdEntityStack addLegacyColdStack(UUID entity, int amount) {
+    /*public ColdEntityStack addLegacyColdStack(UUID entity, int amount) {
         ColdEntityStack stack = new ColdEntityStack(entity);
         //plugin.getDataManager().createHostEntity(stack);
         stack.createDuplicates(amount - 1);
         //plugin.getDataManager().updateHost(stack);
         coldStacks.put(entity, stack);
         return stack;
-    }
+    }*/
 
     public void tryAndLoadColdEntities() {
         for (World world : Bukkit.getWorlds()) {
