@@ -87,12 +87,16 @@ public class DeathListeners implements Listener {
             runCommands(entity, drops);
 
             if (plugin.getEntityStackManager().isStackedEntity(event.getEntity())) {
+                System.out.println("is stacked entity");
                 ((EntityStackImpl)plugin.getEntityStackManager().getStackedEntity(event.getEntity())).onDeath(entity, drops, custom, event.getDroppedExp(), event);
             } else {
+                System.out.println("not stacked entity");
                 DropUtils.processStackedDrop(event.getEntity(), drops, event);
             }
         }
 
+
+        System.out.println("event drops : " + event.getDrops());
         finalItems.remove(entity.getUniqueId());
     }
 

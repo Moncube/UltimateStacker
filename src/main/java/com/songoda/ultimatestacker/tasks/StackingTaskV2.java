@@ -66,6 +66,7 @@ public class StackingTaskV2 extends BukkitRunnable {
         }
 
         int tickRate = Settings.STACK_SEARCH_TICK_SPEED.getInt();
+        tickRate = 5*20;
         runTaskTimerAsynchronously(plugin, tickRate, tickRate);
     }
 
@@ -147,12 +148,12 @@ public class StackingTaskV2 extends BukkitRunnable {
             return true;
 
         //Check nametag or custom entity
-        if ((!stackManager.isStackedEntity(entity) && entity.getCustomName() != null) || plugin.getCustomEntityManager().getCustomEntity(entity) != null)
+        if ((!stackManager.isStackedEntity(entity) && entity.customName() != null) || plugin.getCustomEntityManager().getCustomEntity(entity) != null)
             return true;
 
         // Allow spawn if stack reasons are set and match, or if from a spawner
         final String spawnReason = entity.hasMetadata("US_REASON") && !entity.getMetadata("US_REASON").isEmpty()
-                ? entity.getMetadata("US_REASON").get(0).asString() : null;
+                ? entity.getMetadata("US_REASON").getFirst().asString() : null;
         List<String> stackReasons;
         if (onlyStackFromSpawners) {
             // If only stack from spawners is enabled, make sure the entity spawned from a spawner.
@@ -189,7 +190,7 @@ public class StackingTaskV2 extends BukkitRunnable {
         }
 
         // If this entity is named or a custom entity skip it.
-        if (!isStack && (baseEntity.getCustomName() != null && plugin.getCustomEntityManager().getCustomEntity(baseEntity) != null)) {
+        if (!isStack && (baseEntity.customName() != null && plugin.getCustomEntityManager().getCustomEntity(baseEntity) != null)) {
             processed.add(baseEntity.getUniqueId());
             return;
         }
@@ -350,7 +351,7 @@ public class StackingTaskV2 extends BukkitRunnable {
                 switch (check) {
                     case SPAWN_REASON: {
                         if (initialEntity.hasMetadata("US_REASON"))
-                            entityList.removeIf(entity -> entity.hasMetadata("US_REASON") && !entity.getMetadata("US_REASON").get(0).asString().equals("US_REASON"));
+                            entityList.removeIf(entity -> entity.hasMetadata("US_REASON") && !entity.getMetadata("US_REASON").getFirst().asString().equals("US_REASON"));
                     }
                     case AGE: {
                         if (!(initialEntity instanceof Ageable)) break;
@@ -375,9 +376,8 @@ public class StackingTaskV2 extends BukkitRunnable {
                         }
                     }
                     case ANIMAL_OWNER: {
-                        if (!(initialEntity instanceof Tameable)) break;
+                        if (!(initialEntity instanceof Tameable tameable)) break;
 
-                        Tameable tameable = ((Tameable) initialEntity);
                         entityList.removeIf(entity -> ((Tameable) entity).getOwner() != tameable.getOwner());
                     }
                     case PIG_SADDLE: {
@@ -386,23 +386,20 @@ public class StackingTaskV2 extends BukkitRunnable {
                         break;
                     }
                     case SKELETON_TYPE: {
-                        if (!(initialEntity instanceof Skeleton)) break;
+                        if (!(initialEntity instanceof Skeleton skeleton)) break;
 
-                        Skeleton skeleton = (Skeleton) initialEntity;
                         entityList.removeIf(entity -> ((Skeleton) entity).getSkeletonType() != skeleton.getSkeletonType());
                         break;
                     }
                     case SHEEP_COLOR: {
-                        if (!(initialEntity instanceof Sheep)) break;
+                        if (!(initialEntity instanceof Sheep sheep)) break;
 
-                        Sheep sheep = ((Sheep) initialEntity);
                         entityList.removeIf(entity -> ((Sheep) entity).getColor() != sheep.getColor());
                         break;
                     }
                     case SHEEP_SHEARED: {
-                        if (!(initialEntity instanceof Sheep)) break;
+                        if (!(initialEntity instanceof Sheep sheep)) break;
 
-                        Sheep sheep = ((Sheep) initialEntity);
                         if (!sheep.readyToBeSheared()) {
                             entityList.removeIf(entity -> ((Sheep) entity).readyToBeSheared());
                         } else {
@@ -412,9 +409,8 @@ public class StackingTaskV2 extends BukkitRunnable {
                     }
                     case SNOWMAN_DERPED: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_9)
-                                || !(initialEntity instanceof Snowman)) break;
+                                || !(initialEntity instanceof Snowman snowman)) break;
 
-                        Snowman snowman = ((Snowman) initialEntity);
                         if (snowman.isDerp()) {
                             entityList.removeIf(entity -> !((Snowman) entity).isDerp());
                         } else {
@@ -424,27 +420,23 @@ public class StackingTaskV2 extends BukkitRunnable {
                     }
                     case LLAMA_COLOR: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_11)
-                                || !(initialEntity instanceof Llama)) break;
-                        Llama llama = ((Llama) initialEntity);
+                                || !(initialEntity instanceof Llama llama)) break;
                         entityList.removeIf(entity -> ((Llama) entity).getColor() != llama.getColor());
                         break;
                     }
                     case LLAMA_STRENGTH: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_11)
-                                || !(initialEntity instanceof Llama)) break;
-                        Llama llama = ((Llama) initialEntity);
+                                || !(initialEntity instanceof Llama llama)) break;
                         entityList.removeIf(entity -> ((Llama) entity).getStrength() != llama.getStrength());
                         break;
                     }
                     case VILLAGER_PROFESSION: {
-                        if (!(initialEntity instanceof Villager)) break;
-                        Villager villager = ((Villager) initialEntity);
+                        if (!(initialEntity instanceof Villager villager)) break;
                         entityList.removeIf(entity -> ((Villager) entity).getProfession() != villager.getProfession());
                         break;
                     }
                     case SLIME_SIZE: {
-                        if (!(initialEntity instanceof Slime)) break;
-                        Slime slime = ((Slime) initialEntity);
+                        if (!(initialEntity instanceof Slime slime)) break;
                         entityList.removeIf(entity -> ((Slime) entity).getSize() != slime.getSize());
                         break;
                     }
@@ -475,50 +467,42 @@ public class StackingTaskV2 extends BukkitRunnable {
                     }
                     case HORSE_JUMP: {
                         if (ServerVersion.isServerVersionAtLeast(ServerVersion.V1_11)) {
-                            if (!(initialEntity instanceof AbstractHorse)) break;
-                            AbstractHorse horse = ((AbstractHorse) initialEntity);
+                            if (!(initialEntity instanceof AbstractHorse horse)) break;
                             entityList.removeIf(entity -> ((AbstractHorse) entity).getJumpStrength() != horse.getJumpStrength());
                         } else {
-                            if (!(initialEntity instanceof Horse)) break;
-                            Horse horse = ((Horse) initialEntity);
+                            if (!(initialEntity instanceof Horse horse)) break;
                             entityList.removeIf(entity -> ((Horse) entity).getJumpStrength() != horse.getJumpStrength());
 
                         }
                         break;
                     }
                     case HORSE_COLOR: {
-                        if (!(initialEntity instanceof Horse)) break;
-                        Horse horse = ((Horse) initialEntity);
+                        if (!(initialEntity instanceof Horse horse)) break;
                         entityList.removeIf(entity -> ((Horse) entity).getColor() != horse.getColor());
                         break;
                     }
                     case HORSE_STYLE: {
-                        if (!(initialEntity instanceof Horse)) break;
-                        Horse horse = ((Horse) initialEntity);
+                        if (!(initialEntity instanceof Horse horse)) break;
                         entityList.removeIf(entity -> ((Horse) entity).getStyle() != horse.getStyle());
                         break;
                     }
                     case ZOMBIE_BABY: {
-                        if (!(initialEntity instanceof Zombie)) break;
-                        Zombie zombie = (Zombie) initialEntity;
+                        if (!(initialEntity instanceof Zombie zombie)) break;
                         entityList.removeIf(entity -> ((Zombie) entity).isBaby() != zombie.isBaby());
                         break;
                     }
                     case WOLF_COLLAR_COLOR: {
-                        if (!(initialEntity instanceof Wolf)) break;
-                        Wolf wolf = (Wolf) initialEntity;
+                        if (!(initialEntity instanceof Wolf wolf)) break;
                         entityList.removeIf(entity -> ((Wolf) entity).getCollarColor() != wolf.getCollarColor());
                         break;
                     }
                     case OCELOT_TYPE: {
-                        if (!(initialEntity instanceof Ocelot)) break;
-                        Ocelot ocelot = (Ocelot) initialEntity;
+                        if (!(initialEntity instanceof Ocelot ocelot)) break;
                         entityList.removeIf(entity -> ((Ocelot) entity).getCatType() != ocelot.getCatType());
                     }
                     case CAT_TYPE: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_14)
-                                || !(initialEntity instanceof Cat)) break;
-                        Cat cat = (Cat) initialEntity;
+                                || !(initialEntity instanceof Cat cat)) break;
                         entityList.removeIf(entity -> ((Cat) entity).getCatType() != cat.getCatType());
                         break;
                     }
@@ -532,64 +516,55 @@ public class StackingTaskV2 extends BukkitRunnable {
                         break;
                     }
                     case RABBIT_TYPE: {
-                        if (!(initialEntity instanceof Rabbit)) break;
-                        Rabbit rabbit = (Rabbit) initialEntity;
+                        if (!(initialEntity instanceof Rabbit rabbit)) break;
                         entityList.removeIf(entity -> ((Rabbit) entity).getRabbitType() != rabbit.getRabbitType());
                         break;
                     }
                     case PARROT_TYPE: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_12)
-                                || !(initialEntity instanceof Parrot)) break;
-                        Parrot parrot = (Parrot) initialEntity;
+                                || !(initialEntity instanceof Parrot parrot)) break;
                         entityList.removeIf(entity -> ((Parrot) entity).getVariant() != parrot.getVariant());
                         break;
                     }
                     case PUFFERFISH_STATE: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13)
-                                || !(initialEntity instanceof PufferFish)) break;
-                        PufferFish pufferFish = (PufferFish) initialEntity;
+                                || !(initialEntity instanceof PufferFish pufferFish)) break;
                         entityList.removeIf(entity -> ((PufferFish) entity).getPuffState() != pufferFish.getPuffState());
                         break;
                     }
                     case TROPICALFISH_PATTERN: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13)
-                                || !(initialEntity instanceof TropicalFish)) break;
-                        TropicalFish tropicalFish = (TropicalFish) initialEntity;
+                                || !(initialEntity instanceof TropicalFish tropicalFish)) break;
                         entityList.removeIf(entity -> ((TropicalFish) entity).getPattern() != tropicalFish.getPattern());
                         break;
                     }
                     case TROPICALFISH_PATTERN_COLOR: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13)
-                                || !(initialEntity instanceof TropicalFish)) break;
-                        TropicalFish tropicalFish = (TropicalFish) initialEntity;
+                                || !(initialEntity instanceof TropicalFish tropicalFish)) break;
                         entityList.removeIf(entity -> ((TropicalFish) entity).getPatternColor() != tropicalFish.getPatternColor());
                         break;
                     }
                     case TROPICALFISH_BODY_COLOR: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13)
-                                || !(initialEntity instanceof TropicalFish)) break;
-                        TropicalFish tropicalFish = (TropicalFish) initialEntity;
+                                || !(initialEntity instanceof TropicalFish tropicalFish)) break;
                         entityList.removeIf(entity -> ((TropicalFish) entity).getBodyColor() != tropicalFish.getBodyColor());
                         break;
                     }
                     case PHANTOM_SIZE: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_13)
-                                || !(initialEntity instanceof Phantom)) break;
-                        Phantom phantom = (Phantom) initialEntity;
+                                || !(initialEntity instanceof Phantom phantom)) break;
                         entityList.removeIf(entity -> ((Phantom) entity).getSize() != phantom.getSize());
                         break;
                     }
                     case AXOLOTL_VARIANT: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_17)
-                                || !(initialEntity instanceof Axolotl)) break;
-                        Axolotl axolotl = (Axolotl) initialEntity;
+                                || !(initialEntity instanceof Axolotl axolotl)) break;
                         entityList.removeIf(entity -> ((Axolotl) entity).getVariant() != axolotl.getVariant());
                         break;
                     }
                     case GOAT_HAS_HORNS: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_17)
-                                || !(initialEntity instanceof Goat)) break;
-                        Goat goat = (Goat) initialEntity;
+                                || !(initialEntity instanceof Goat goat)) break;
                         boolean hasLeftHorn = goat.hasLeftHorn();
                         boolean hasRightHorn = goat.hasRightHorn();
                         entityList.removeIf(entity -> {
@@ -600,36 +575,31 @@ public class StackingTaskV2 extends BukkitRunnable {
                     }
                     case FROG_VARIANT: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_19)
-                                || !(initialEntity instanceof Frog)) break;
-                        Frog frog = (Frog) initialEntity;
+                                || !(initialEntity instanceof Frog frog)) break;
                         entityList.removeIf(entity -> ((Frog) entity).getVariant() != frog.getVariant());
                         break;
                     }
                     case TADPOLE_AGE: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_19)
-                                || !(initialEntity instanceof Tadpole)) break;
-                        Tadpole tadpole = (Tadpole) initialEntity;
+                                || !(initialEntity instanceof Tadpole tadpole)) break;
                         entityList.removeIf(entity -> ((Tadpole) entity).getAge() != tadpole.getAge());
                         break;
                     }
                     case WARDEN_ANGER_LEVEL: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_19)
-                                || !(initialEntity instanceof Warden)) break;
-                        Warden warden = (Warden) initialEntity;
+                                || !(initialEntity instanceof Warden warden)) break;
                         entityList.removeIf(entity -> ((Warden) entity).getAnger() != warden.getAnger());
                         break;
                     }
                     case FOX_TYPE: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_14)
-                                || !(initialEntity instanceof Fox)) break;
-                        Fox fox = (Fox) initialEntity;
+                                || !(initialEntity instanceof Fox fox)) break;
                         entityList.removeIf(entity -> ((Fox) entity).getFoxType() != fox.getFoxType());
                         break;
                     }
                     case HOGLIN_IMMUNE: {
                         if (!ServerVersion.isServerVersionAtLeast(ServerVersion.V1_16)
-                                || !(initialEntity instanceof Hoglin)) break;
-                        Hoglin hoglin = (Hoglin) initialEntity;
+                                || !(initialEntity instanceof Hoglin hoglin)) break;
                         if (hoglin.isImmuneToZombification()) {
                             entityList.removeIf(entity -> !((Hoglin) entity).isImmuneToZombification());
                         } else {
@@ -654,8 +624,8 @@ public class StackingTaskV2 extends BukkitRunnable {
         if (initialEntity.getEquipment() == null) return false;
         EntityEquipment equipment = initialEntity.getEquipment();
 
-        return (equipment.getItemInHand().getType() != Material.AIR
-                && !weaponsArentEquipment && !equipment.getItemInHand().getEnchantments().isEmpty()
+        return (equipment.getItemInMainHand().getType() != Material.AIR
+                && !weaponsArentEquipment && !equipment.getItemInMainHand().getEnchantments().isEmpty()
                 || (equipment.getHelmet() != null && equipment.getHelmet().getType() != Material.AIR)
                 || (equipment.getChestplate() != null && equipment.getChestplate().getType() != Material.AIR)
                 || (equipment.getLeggings() != null && equipment.getLeggings().getType() != Material.AIR)
@@ -679,15 +649,9 @@ public class StackingTaskV2 extends BukkitRunnable {
     }
 
     public boolean canFly(LivingEntity entity) {
-        switch (entity.getType()) {
-            case GHAST:
-            case BLAZE:
-            case PHANTOM:
-            case BAT:
-            case BEE:
-                return true;
-            default:
-                return false;
-        }
+        return switch (entity.getType()) {
+            case GHAST, BLAZE, PHANTOM, BAT, BEE -> true;
+            default -> false;
+        };
     }
 }

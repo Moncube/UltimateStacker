@@ -7,7 +7,6 @@ import com.songoda.ultimatestacker.UltimateStacker;
 import com.songoda.ultimatestacker.api.events.entity.EntityStackKillEvent;
 import com.songoda.ultimatestacker.api.stack.entity.EntityStack;
 import com.songoda.ultimatestacker.settings.Settings;
-import com.songoda.ultimatestacker.utils.Async;
 import com.songoda.ultimatestacker.utils.Methods;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -160,30 +159,20 @@ public class EntityStackImpl implements EntityStack {
     }
 
     private void handleWholeStackDeath(LivingEntity killed, List<Drop> drops, boolean custom, int droppedExp, EntityDeathEvent event) {
-
+        System.out.println("handling while stack death");
         EntityStack stack = plugin.getEntityStackManager().getStackedEntity(killed);
-        // In versions 1.14 and below experience is not dropping. Because of this we are doing this ourselves.
-        if (ServerVersion.isServerVersionAtOrBelow(ServerVersion.V1_14)) {
-            Location killedLocation = killed.getLocation();
-            if (droppedExp > 0)
-                killedLocation.getWorld().spawn(killedLocation, ExperienceOrb.class).setExperience(droppedExp * getAmount());
-        } else {
-            event.setDroppedExp(droppedExp * getAmount());
-        }
+        event.setDroppedExp(droppedExp * getAmount());
 
 
         if (plugin.getCustomEntityManager().getCustomEntity(killed) == null) {
-            Async.run(() -> {
                 drops.removeIf(it -> it.getItemStack() != null
                         && it.getItemStack().isSimilar(killed.getEquipment().getItemInHand()));
                 for (ItemStack item : killed.getEquipment().getArmorContents()) {
                     drops.removeIf(it -> it.getItemStack() != null && it.getItemStack().isSimilar(item));
                 }
                 DropUtils.processStackedDrop(killed, plugin.getLootablesManager().getDrops(killed, getAmount()), event);
-            });
         }
 
-        event.getDrops().clear();
         destroy();
         if (killed.getKiller() == null) return;
         plugin.addExp(killed.getKiller(), this);
@@ -214,6 +203,7 @@ public class EntityStackImpl implements EntityStack {
     }
 
     public void onDeath(LivingEntity killed, List<Drop> drops, boolean custom, int droppedExp, EntityDeathEvent event) {
+        System.out.println("on death");
         killed.setCustomName(null);
         killed.setCustomNameVisible(false);
 
@@ -221,12 +211,14 @@ public class EntityStackImpl implements EntityStack {
                 || plugin.getMobFile().getBoolean("Mobs." + killed.getType().name() + ".Kill Whole Stack");
 
         if (killWholeStack && getAmount() > 1) {
+            System.out.println("killing whole stack");
             handleWholeStackDeath(killed, drops, custom, droppedExp, event);
         } else if (getAmount() > 1) {
             List<String> reasons = Settings.INSTANT_KILL.getStringList();
             EntityDamageEvent lastDamageCause = killed.getLastDamageCause();
 
             if (lastDamageCause != null) {
+                System.out.println("last damage cause is not null");
                 EntityDamageEvent.DamageCause cause = lastDamageCause.getCause();
                 for (String s : reasons) {
                     if (!cause.name().equalsIgnoreCase(s)) continue;
@@ -234,6 +226,7 @@ public class EntityStackImpl implements EntityStack {
                     return;
                 }
             }
+            System.out.println("handling single stack death");
             handleSingleStackDeath(killed, drops, droppedExp, event);
         }
     }

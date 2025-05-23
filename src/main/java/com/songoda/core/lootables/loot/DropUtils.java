@@ -11,6 +11,7 @@ import java.util.List;
 
 public class DropUtils {
     public static void processStackedDrop(LivingEntity entity, List<Drop> drops, EntityDeathEvent event) {
+        System.out.println("processing stack drops");
         int xpToDrop = event.getDroppedExp();
         List<ItemStack> items = new ArrayList<>();
         List<String> commands = new ArrayList<>();
@@ -51,7 +52,9 @@ public class DropUtils {
         event.getDrops().clear();
 
         if (!items.isEmpty()) {
-            dropItems(items, event);
+            for (ItemStack item : items) {
+                event.getDrops().add(item);
+            }
         } else if (!commands.isEmpty()) {
             runCommands(entity, commands);
         }
@@ -61,12 +64,6 @@ public class DropUtils {
         }
 
         event.setDroppedExp(xpToDrop);
-    }
-
-    private static void dropItems(List<ItemStack> items, EntityDeathEvent event) {
-        for (ItemStack item : items) {
-            event.getDrops().add(item);
-        }
     }
 
     private static void runCommands(LivingEntity entity, List<String> commands) {
