@@ -11,7 +11,6 @@ import java.util.List;
 
 public class DropUtils {
     public static void processStackedDrop(LivingEntity entity, List<Drop> drops, EntityDeathEvent event) {
-        System.out.println("processing stack drops");
         int xpToDrop = event.getDroppedExp();
         List<ItemStack> items = new ArrayList<>();
         List<String> commands = new ArrayList<>();

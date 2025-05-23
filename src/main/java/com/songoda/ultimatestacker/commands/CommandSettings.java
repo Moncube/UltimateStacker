@@ -35,7 +35,7 @@ public class CommandSettings extends AbstractCommand {
             }
         }
 
-        System.out.println("UltimateStacker: "+amount+" tasks...");
+        plugin.getLogger().info("UltimateStacker: "+amount+" tasks...");
         
         return ReturnType.SUCCESS;
     }

@@ -159,7 +159,6 @@ public class EntityStackImpl implements EntityStack {
     }
 
     private void handleWholeStackDeath(LivingEntity killed, List<Drop> drops, boolean custom, int droppedExp, EntityDeathEvent event) {
-        System.out.println("handling while stack death");
         EntityStack stack = plugin.getEntityStackManager().getStackedEntity(killed);
         event.setDroppedExp(droppedExp * getAmount());
 
@@ -203,7 +202,6 @@ public class EntityStackImpl implements EntityStack {
     }
 
     public void onDeath(LivingEntity killed, List<Drop> drops, boolean custom, int droppedExp, EntityDeathEvent event) {
-        System.out.println("on death");
         killed.setCustomName(null);
         killed.setCustomNameVisible(false);
 
@@ -211,14 +209,12 @@ public class EntityStackImpl implements EntityStack {
                 || plugin.getMobFile().getBoolean("Mobs." + killed.getType().name() + ".Kill Whole Stack");
 
         if (killWholeStack && getAmount() > 1) {
-            System.out.println("killing whole stack");
             handleWholeStackDeath(killed, drops, custom, droppedExp, event);
         } else if (getAmount() > 1) {
             List<String> reasons = Settings.INSTANT_KILL.getStringList();
             EntityDamageEvent lastDamageCause = killed.getLastDamageCause();
 
             if (lastDamageCause != null) {
-                System.out.println("last damage cause is not null");
                 EntityDamageEvent.DamageCause cause = lastDamageCause.getCause();
                 for (String s : reasons) {
                     if (!cause.name().equalsIgnoreCase(s)) continue;
@@ -226,7 +222,6 @@ public class EntityStackImpl implements EntityStack {
                     return;
                 }
             }
-            System.out.println("handling single stack death");
             handleSingleStackDeath(killed, drops, droppedExp, event);
         }
     }

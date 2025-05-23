@@ -113,12 +113,12 @@ public class UltimateStacker extends SongodaPlugin {
     	for ( Player player : Bukkit.getOnlinePlayers() ) {
     		player.saveData();
     	}
-    	System.out.println("[UltimateStacker/MONCUBE] Saved player's data");
+    	getLogger().info("[UltimateStacker/MONCUBE] Saved player's data");
     	
     	for( World world : Bukkit.getWorlds() ) {
     		world.save();
     	}
-    	System.out.println("[UltimateStacker/MONCUBE] Saved worlds data");
+        getLogger().info("[UltimateStacker/MONCUBE] Saved worlds data");
     	
     	
     	for( BukkitTask task : Bukkit.getScheduler().getPendingTasks() ) {
@@ -126,7 +126,7 @@ public class UltimateStacker extends SongodaPlugin {
     			task.cancel();
     		}
     	}
-    	System.out.println("[UltimateStacker/MONCUBE] Cancelled all tasks");
+        getLogger().info("[UltimateStacker/MONCUBE] Cancelled all tasks");
 
         if (this.stackingTask != null)
             this.stackingTask.cancel();
